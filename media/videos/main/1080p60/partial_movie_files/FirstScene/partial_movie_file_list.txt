@@ -1,7 +1,0 @@
-# This file is used internally by FFMPEG.
-file 'file:/home/juanman/Programming/up_files/113_write_up/v2_write_up/media/videos/main/1080p60/partial_movie_files/FirstScene/3544663784_2273573434_223132457.mp4'
-file 'file:/home/juanman/Programming/up_files/113_write_up/v2_write_up/media/videos/main/1080p60/partial_movie_files/FirstScene/260329756_1299197978_2017663506.mp4'
-file 'file:/home/juanman/Programming/up_files/113_write_up/v2_write_up/media/videos/main/1080p60/partial_movie_files/FirstScene/260329756_323320155_171652239.mp4'
-file 'file:/home/juanman/Programming/up_files/113_write_up/v2_write_up/media/videos/main/1080p60/partial_movie_files/FirstScene/260329756_2549682001_1860028063.mp4'
-file 'file:/home/juanman/Programming/up_files/113_write_up/v2_write_up/media/videos/main/1080p60/partial_movie_files/FirstScene/260329756_670116832_2269406900.mp4'
-file 'file:/home/juanman/Programming/up_files/113_write_up/v2_write_up/media/videos/main/1080p60/partial_movie_files/FirstScene/260329756_4000188548_1278625222.mp4'
