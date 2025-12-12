@@ -32,10 +32,6 @@ class TrigIssues(Scene):
             Transform(init_waves, sum_wave),
             Transform(init_formulas, sum_formula)
         )
-
-        # self.play(Transform())
-
-
         
 
 class CurrentVoltagePowerWave(Scene):
@@ -55,6 +51,7 @@ class CurrentVoltagePowerWave(Scene):
             lambda: axes.plot(lambda x: AMP * np.sin(x - curr_phase.get_value()) , color=GREEN)
         )
 
+        # VOLTAGE
         self.play(Create(axes), run_time=1)
         self.play(
             # Create(curr_wave),
@@ -62,19 +59,29 @@ class CurrentVoltagePowerWave(Scene):
             run_time=2
         )
 
-        v_text = MathTex("v(t)", font_size=50, color=YELLOW).move_to(volt_wave.get_end()).shift(RIGHT*0.5)
-        # v_text = MathTex("v(t)", font_size=50, color=YELLOW).to_edge(RIGHT).shift(DOWN)
-        # self.play(Create(v_text), Create(i_text), run_time=0.5)
+        # v_text = MathTex("v(t)", font_size=50, color=YELLOW).move_to(volt_wave.get_end()).shift(RIGHT*0.5)
+        v_text = MathTex(
+            r"v(t)",
+            # substrings_to_isolate=['\phi'],
+            font_size=50,
+            color=YELLOW
+        ).move_to(volt_wave.get_end()).shift(RIGHT*0.5)
         self.play(Create(v_text), run_time=0.5)
 
         self.wait(1)
         self.play(v_text.animate().center().to_edge(UP).to_edge(LEFT).shift([1, 0.5, 0]))
 
-        new_v_text = MathTex(r"v(t) = V_{max} \cos(\omega t - \phi)", font_size=50, color=YELLOW).to_edge(UP).to_edge(LEFT).shift([1, 0.5, 0])
+        new_v_text = MathTex(
+            r"v(t) = V_{max} \cos(\omega t - \phi)",
+            substrings_to_isolate=[r'\phi'],
+            font_size=50,
+            color=YELLOW
+        ).to_edge(UP).to_edge(LEFT).shift([1, 0.5, 0])
         self.play(Transform(v_text, new_v_text))
         
         self.play(Create(curr_wave), run_time=2)
 
+        # CURRENT
         i_text = MathTex("i(t)", font_size=50, color=GREEN).move_to(curr_wave.get_end()).shift(RIGHT*0.5)
         self.play(Create(i_text), run_time=0.5)
 
@@ -83,7 +90,8 @@ class CurrentVoltagePowerWave(Scene):
 
         new_i_text= MathTex(r"i(t) = I_{max} \cos(\omega t - \phi)", font_size=50, color=GREEN).to_edge(UP).to_edge(LEFT).shift([1, -0.3, 0])
         self.play(Transform(i_text, new_i_text))
-
+         
+        # POWER
         pow_phase = ValueTracker(0)
         pow_offset = ValueTracker(0)
         power_wave = always_redraw(
@@ -94,21 +102,66 @@ class CurrentVoltagePowerWave(Scene):
         )
 
         self.play(Create(power_wave), run_time=2)
-        p_text = Text("P", font_size=30, color=MAROON_C).shift([0.5, 2, 0])
+        p_text = MathTex("p(t)", font_size=50, color=MAROON_C).move_to(power_wave.get_end()).shift(RIGHT*0.5)
         self.play(Create(p_text), run_time=0.5)
 
+        # constant 60 frequency
+        v_phi = MathTex(r"\phi = 0", font_size=50, color=YELLOW).move_to(v_text.get_right()).shift(RIGHT*2)
+        self.play(Create(v_phi))
+        v_text_phi = new_v_text.get_part_by_tex(r'\phi')
+        v_text_phi_center = v_text_phi.get_center()
+        new_v_phi = MathTex(r"0", font_size=50, color=YELLOW).move_to(v_text_phi_center)
+        self.play( Transform( v_phi, new_v_phi), )
+        self.play(FadeOut(v_phi))
+        new_v_text = MathTex(
+            r"v(t) = V_{max} \cos(\omega t)",
+            font_size=50,
+            color=YELLOW
+        ).to_edge(UP).to_edge(LEFT).shift([1, 0.5, 0])
+        self.play(Transform(v_text, new_v_text))
+
+        # phase shift
         phase_shift = np.pi / 2
         shifted_curr = axes.plot(lambda x: AMP * np.sin(x  - phase_shift), color=GREEN)
         shifted_pow= axes.plot(lambda x: (AMP / 2) * np.sin(x * 2 - np.pi), color=MAROON_C)
-        # self.play(Transform(curr_wave, shifted_curr), Transform(power_wave, shifted_pow))
         self.play(
             curr_phase.animate().set_value(np.pi / 2),
             pow_phase.animate().set_value(np.pi / 2),
             pow_offset.animate().set_value(-0.5),
-            # i_text.animate().shift(RIGHT*2),
-            p_text.animate().shift([1, -1, 0]),
             run_time=2
         )
+
+        start_x = np.pi / 2
+        start_line = DashedLine(
+            start=axes.c2p(start_x, 0),
+            end=axes.c2p(start_x, -0.5)
+        )
+        end_x = np.pi
+        end_line = DashedLine(
+            start=axes.c2p(end_x, 0),
+            end=axes.c2p(end_x, -0.5)
+        )
+        self.play(Create(start_line))
+        arrow = Arrow(
+            start=start_line.get_end(),
+            end=end_line.get_end(),
+            max_tip_length_to_length_ratio=0,
+            buff=0,
+        )
+        brace = Brace(arrow, DOWN, color=GREEN)
+        self.play(
+            Create(end_line),
+            Create(arrow),
+        )
+        i_phase= MathTex(r"\phi", font_size=50, color=GREEN).move_to(brace.get_center()).shift(DOWN*0.5)
+        self.play(
+            Create(brace),
+            Create(i_phase)
+        )
+
+        
+
+
         
 
 def main():
