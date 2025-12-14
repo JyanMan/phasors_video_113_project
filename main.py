@@ -91,21 +91,8 @@ class CurrentVoltagePowerWave(Scene):
         new_i_text= MathTex(r"i(t) = I_{max} \cos(\omega t - \phi)", font_size=50, color=GREEN).to_edge(UP).to_edge(LEFT).shift([1, -0.3, 0])
         self.play(Transform(i_text, new_i_text))
          
-        # POWER
-        pow_phase = ValueTracker(0)
-        pow_offset = ValueTracker(0)
-        power_wave = always_redraw(
-            lambda: axes.plot(
-                lambda x:
-                (AMP / 2) * np.sin(x * 2 - (np.pi / 2 + pow_phase.get_value())) + 0.5 + pow_offset.get_value(), color=MAROON_C
-            )
-        )
 
-        self.play(Create(power_wave), run_time=2)
-        p_text = MathTex("p(t)", font_size=50, color=MAROON_C).move_to(power_wave.get_end()).shift(RIGHT*0.5)
-        self.play(Create(p_text), run_time=0.5)
-
-        # constant 60 frequency
+        # phi of v(t) being zero
         v_phi = MathTex(r"\phi = 0", font_size=50, color=YELLOW).move_to(v_text.get_right()).shift(RIGHT*2)
         self.play(Create(v_phi))
         v_text_phi = new_v_text.get_part_by_tex(r'\phi')
@@ -126,8 +113,8 @@ class CurrentVoltagePowerWave(Scene):
         shifted_pow= axes.plot(lambda x: (AMP / 2) * np.sin(x * 2 - np.pi), color=MAROON_C)
         self.play(
             curr_phase.animate().set_value(np.pi / 2),
-            pow_phase.animate().set_value(np.pi / 2),
-            pow_offset.animate().set_value(-0.5),
+            # pow_phase.animate().set_value(np.pi / 2),
+            # pow_offset.animate().set_value(-0.5),
             run_time=2
         )
 
@@ -159,6 +146,35 @@ class CurrentVoltagePowerWave(Scene):
             Create(i_phase)
         )
 
+        # Frequency constant 60
+        text_v_w= MathTex(
+            r"\omega = 2\pi f",
+            substrings_to_isolate="f"
+        ).to_edge(RIGHT).to_edge(UP)
+        self.play(Create(text_v_w))
+
+        self.wait(1)
+        new_text_v_w = MathTex(
+            r"\omega = 2\pi 60",
+            substrings_to_isolate="60"
+        ).to_edge(RIGHT).to_edge(UP).shift(LEFT)
+        self.play(Transform(text_v_w, new_text_v_w))
+
+
+        # POWER
+        # pow_phase = ValueTracker(0)
+        # pow_offset = ValueTracker(0)
+        # power_wave = always_redraw(
+        #     lambda: axes.plot(
+        #         lambda x:
+        #         # (AMP / 2) * np.sin(x * 2 - (np.pi / 2 + pow_phase.get_value())) + 0.5 + pow_offset.get_value(), color=MAROON_C
+        #         (AMP / 2) * np.sin(x * 2 - (np.pi / 2 + pow_phase.get_value())) + 0.5 + pow_offset.get_value(), color=MAROON_C
+        #     )
+        # )
+
+        # self.play(Create(power_wave), run_time=2)
+        # p_text = MathTex("p(t)", font_size=50, color=MAROON_C).move_to(power_wave.get_end()).shift(RIGHT*0.5)
+        # self.play(Create(p_text), run_time=0.5)
         
 
 
