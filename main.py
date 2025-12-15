@@ -396,7 +396,6 @@ class NegativePower(Scene):
         self.play(Create(phase_number))
 
         # shift the current left and right
-            
         def pow_offset_follow_current(mob):
             value = curr_phase.get_value() % (2 * np.pi)
             half_value = value % np.pi
@@ -414,14 +413,23 @@ class NegativePower(Scene):
         self.play(
             curr_phase.animate().set_value(-2*np.pi),
             pow_phase.animate().set_value(-2*np.pi),
+            lag_ratio=0.8,
             run_time=4
         )
         self.play(
             curr_phase.animate().set_value(2*np.pi),
             pow_phase.animate().set_value(2*np.pi),
+            lag_ratio=0.8,
             # pos_offset.animate().set_value()
             run_time=8
         )
+
+        # add approximation of phase in terms of pi
+        pi_terms_phase = MathTex(
+            r"\approx 2\pi",
+            color=PINK
+        ).move_to(new_i_phase.get_right()).shift(DOWN*0.5)
+        self.play(Create(pi_terms_phase), run_time=0.5)
 
 
         
