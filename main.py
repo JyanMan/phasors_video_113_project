@@ -1,5 +1,6 @@
 from manim import *
 import numpy as np
+import math
 
 class TrigIssues(Scene):
     def construct(self):
@@ -231,7 +232,8 @@ class NegativePower(Scene):
             color=YELLOW
         ).to_edge(UP).to_edge(LEFT).shift([1, 0.5, 0])
         i_text = MathTex(
-            r"i(t) = I_{max} \cos(", r"2\pi 60t", r"+ \phi", r")",
+            r"i(t) = I_{max} \cos(", r"2\pi 60t", r"+", r"\phi", r")",
+            substrings_to_isolate=[r'\phi'],
             font_size=50,
             color=GREEN
         ).to_edge(UP).to_edge(LEFT).shift([1, -0.3, 0])
@@ -333,16 +335,92 @@ class NegativePower(Scene):
             self.phase_to_zero_animation(phase_group),
             curr_phase.animate().set_value(0),
             pow_phase.animate().set_value(0),
-            pow_offset.animate().set_value(0)
+            pow_offset.animate().set_value(0),
+            run_time=3
         )
 
         start_line = phase_group[0]
         end_line = phase_group[1]
         i_phase = phase_group[4]
-        new_i_phase = MathTex(r"\phi", r" = 0", font_size=50, color=GREEN).move_to(i_phase.get_left()).shift(RIGHT*0.5)
+        new_i_phase = MathTex(
+            r"\phi =", r"\phantom{+0.00}",
+            font_size=50,
+            color=GREEN
+        ).move_to(i_phase.get_left()).shift(RIGHT*0.5)
+        i_phase_num = DecimalNumber(
+            number=curr_phase.get_value(),
+            num_decimal_places=2,
+            color=BLUE_C,
+        ).move_to(new_i_phase.get_right()).shift(RIGHT*0.5)
         self.play(
             FadeOut(end_line), FadeOut(start_line),
-            Transform(i_phase, new_i_phase)
+            Transform(i_phase, new_i_phase),
+            Create(i_phase_num)
+        )
+        def i_phase_updater(mob):
+            value = curr_phase.get_value()
+            mob.set_value(value)
+        i_phase_num.add_updater(i_phase_updater)
+
+        # focus on phi / i_phase
+        self.play(
+            FadeToColor(i_phase, color=BLUE_C),
+            FadeToColor(i_formula[3], color=BLUE_C)
+        )
+        new_i_formula = MathTex(
+            r"i(t) = I_{max} \cos(", r"2\pi 60t", r"\phantom{+0.00}", r")",
+            substrings_to_isolate=[r"\phi"],
+            font_size=50,
+            color=GREEN
+        ).move_to(i_formula.get_center()).shift(RIGHT*0.2)
+
+        # set phi to a constant
+        self.play(Transform(i_formula, new_i_formula) )
+        phase_number = MathTex(
+            r"+0.00",
+            color=BLUE_C,
+            font_size=50,
+        # ).move_to(i_formula.get_right()).shift(LEFT*2)
+        ).move_to(new_i_formula.get_right()).shift(LEFT*0.8)
+        def phase_number_updater(mob):
+            value = curr_phase.get_value()
+            sign = "+" if value >= 0 else "-"
+            mob.become(
+                MathTex(
+                    rf"{sign}{abs(value):.2f}",
+                    font_size=50,
+                    color=BLUE_C
+                ).move_to(mob.get_center())
+            )
+        phase_number.add_updater(phase_number_updater)
+        self.play(Create(phase_number))
+
+        # shift the current left and right
+            
+        def pow_offset_follow_current(mob):
+            value = curr_phase.get_value() % (2 * np.pi)
+            half_value = value % np.pi
+            sign = math.copysign(1, value)
+            ratio = abs(half_value) / np.pi
+            if abs(value) < np.pi:
+                value = sign * ratio
+                mob.set_value(-value)
+            else:
+                value = sign * (1 - ratio) 
+                mob.set_value(-value)
+                
+        pow_offset.add_updater(pow_offset_follow_current)
+        
+        self.play(
+            curr_phase.animate().set_value(-2*np.pi),
+            pow_phase.animate().set_value(-2*np.pi),
+            run_time=4
+        )
+        self.play(
+            curr_phase.animate().set_value(2*np.pi),
+            pow_phase.animate().set_value(2*np.pi),
+            # pos_offset.animate().set_value()
+            run_time=8
         )
 
 
