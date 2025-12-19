@@ -2,122 +2,140 @@ from manim import *
 import numpy as np
 import math
 
-class TrigIssues(Scene):
-    def construct(self):
-        axes = Axes(
-            x_range=[0, 10, 1],
-            y_range=[-1.5, 1.5, 0.5],
-            axis_config={"color": BLUE}
-        )
-        axes2 = Axes(
-            x_range=[0, 10, 1],
-            y_range=[-1.5, 1.5, 0.5],
-            axis_config={"color": BLUE}
-        )
+# class TrigIssues(Scene):
+#     def construct(self):
+#         axes = Axes(
+#             x_range=[0, 10, 1],
+#             y_range=[-1.5, 1.5, 0.5],
+#             axis_config={"color": BLUE}
+#         )
+#         axes2 = Axes(
+#             x_range=[0, 10, 1],
+#             y_range=[-1.5, 1.5, 0.5],
+#             axis_config={"color": BLUE}
+#         )
 
-        first_wave = axes.plot(lambda x: 0.5*np.sin(x*2), color=GREEN).move_to(DOWN)
-        second_wave = axes2.plot(lambda x: 0.5*np.sin(x*2), color=BLUE).move_to(UP*2)
+#         first_wave = axes.plot(lambda x: 0.5*np.sin(x*2), color=GREEN).move_to(DOWN)
+#         second_wave = axes2.plot(lambda x: 0.5*np.sin(x*2), color=BLUE).move_to(UP*2)
 
-        first_cos = MathTex(r"a = A_{1} \cos( \omega t - \phi)", font_size=40).move_to(DOWN*2.5)
-        second_cos= MathTex(r"b = A_{2} \cos(\omega t - \phi)", font_size=40).move_to(UP*0.5)
+#         first_cos = MathTex(r"a = A_{1} \cos( \omega t - \phi)", font_size=40).move_to(DOWN*2.5)
+#         second_cos= MathTex(r"b = A_{2} \cos(\omega t - \phi)", font_size=40).move_to(UP*0.5)
 
-        self.play(Create(first_wave), Create(second_wave), Create(first_cos), Create(second_cos))
+#         self.play(Create(first_wave), Create(second_wave), Create(first_cos), Create(second_cos))
 
-        self.wait(2)
+#         self.wait(2)
 
-        sum_wave = axes.plot(lambda x: np.sin(x*2), color=YELLOW)        
-        init_waves = VGroup(*[first_wave, second_wave])
-        init_formulas = VGroup(*[first_cos, second_cos])
-        sum_formula = MathTex(r"c = A_{1} \cos(\omega t - \phi) +  A_{1} \cos(\omega t - \phi)", font_size=40).move_to(DOWN*2.5)
-        self.play(
-            Transform(init_waves, sum_wave),
-            Transform(init_formulas, sum_formula)
-        )
-
-
+#         sum_wave = axes.plot(lambda x: np.sin(x*2), color=YELLOW)        
+#         init_waves = VGroup(*[first_wave, second_wave])
+#         init_formulas = VGroup(*[first_cos, second_cos])
+#         sum_formula = MathTex(r"c = A_{1} \cos(\omega t - \phi) +  A_{1} \cos(\omega t - \phi)", font_size=40).move_to(DOWN*2.5)
+#         self.play(
+#             Transform(init_waves, sum_wave),
+#             Transform(init_formulas, sum_formula)
+#         )
         
 
 class CurrentVoltagePowerWave(Scene):
     def construct(self):
-        # in ac,
+        WAIT_FOR_VO = 2.5
+        AMP = 1
         axes = Axes(
             x_range=[0, 10, 1],
             y_range=[-1.5, 1.5, 0.5],
             axis_config={"color": BLUE}
         ).shift(LEFT*0.5)
 
-        AMP = 1
-
-        volt_wave = axes.plot(lambda x: AMP * np.sin(x), color=YELLOW)
-        curr_phase= ValueTracker(0)
-        curr_wave = always_redraw(
-            lambda: axes.plot(lambda x: AMP * np.sin(x - curr_phase.get_value()) , color=GREEN)
-        )
-
-        # VOLTAGE
         self.play(Create(axes), run_time=1)
-        self.play(
-            # Create(curr_wave),
-            Create(volt_wave),
-            run_time=2
-        )
+        self.wait(0.5)
 
-        # v_text = MathTex("v(t)", font_size=50, color=YELLOW).move_to(volt_wave.get_end()).shift(RIGHT*0.5)
+        ###### VOLTAGE WAVE INITIAL ANIMATION ######
+        volt_wave = axes.plot(lambda x: AMP * np.cos(x), color=YELLOW)
+        volt_wave_end = Dot(axes.c2p(0, AMP), color=YELLOW_C)
         v_text = MathTex(
             r"v(t)",
             # substrings_to_isolate=['\phi'],
             font_size=50,
             color=YELLOW
-        ).move_to(volt_wave.get_end()).shift(RIGHT*0.5)
-        self.play(Create(v_text), run_time=0.5)
+        ).next_to(volt_wave.get_end(), RIGHT)
 
-        self.wait(1)
-        self.play(v_text.animate().center().to_edge(UP).to_edge(LEFT).shift([1, 0.5, 0]))
+        self.play(Create(volt_wave_end))
+
+        volt_wave_end.add_updater(lambda f: f.move_to(volt_wave.get_end()))
+
+        self.play(
+            Create(volt_wave, rate_func=smooth),
+            run_time=2
+        )
+        self.wait(0.5)
+        self.play(Write(v_text), run_time=0.5)
+        self.wait(0.5)
+        self.play(v_text.animate().center().to_edge(UP).to_edge(LEFT).shift(RIGHT))
+        self.play(Uncreate(volt_wave_end))
 
         new_v_text = MathTex(
-            r"v(t) = V_{max} \cos(", r"\omega t", r"+ \phi)",
-            substrings_to_isolate=[r'\phi'],
+            r"v(t) = V_{max} \cos(\omega t + \phi_v)",
+            substrings_to_isolate=[r'\phi_v'],
             font_size=50,
             color=YELLOW
-        ).to_edge(UP).to_edge(LEFT).shift([1, 0.5, 0])
-        self.play(Transform(v_text, new_v_text))
-        
-        self.play(Create(curr_wave), run_time=2)
+        ).move_to(v_text.get_left(), aligned_edge=LEFT)
 
-        # CURRENT
+        self.play(Transform(v_text, new_v_text))
+        self.wait(WAIT_FOR_VO)
+        ###### VOLTAGE WAVE INITIAL ANIMATION ######
+        
+
+        ###### CURRENT WAVE INITIAL ANIMATION  ######
+        curr_phase= ValueTracker(0)
+        curr_wave = always_redraw(
+            lambda: axes.plot(lambda x: AMP * np.cos(x - curr_phase.get_value()) , color=GREEN)
+        )
+        curr_wave_end = Dot(axes.c2p(0, AMP), color=PURE_GREEN)
+
         i_text = MathTex(
             "i(t)",
             font_size=50,
             color=GREEN
         ).move_to(curr_wave.get_end()).shift(RIGHT*0.5)
 
-        self.play(Create(i_text), run_time=0.5)
+        self.play(Create(curr_wave_end))
 
+        curr_wave_end.add_updater(lambda f: f.move_to(curr_wave.get_end()))
+        
+        self.play(Create(curr_wave, rate_func=smooth), run_time=2)
+        self.play(Write(i_text), run_time=0.5)
         self.wait(1)
-        self.play(i_text.animate().move_to(v_text.get_left()).shift([0.3, -0.8, 0]))
-
-        new_i_text= MathTex(
-            r"i(t) = I_{max} \cos(", r"\omega t", r"+ \phi", r")",
+        self.play(i_text.animate().next_to(new_v_text, DOWN, aligned_edge=LEFT))
+        
+        new_i_text = MathTex(
+            r"i(t) = I_{max} \cos(\omega t + \phi_i)",
             font_size=50,
             color=GREEN
-        ).to_edge(UP).to_edge(LEFT).shift([1, -0.3, 0])
+        ).move_to(i_text.get_left(), aligned_edge=LEFT)
         self.play(Transform(i_text, new_i_text))
+        self.play(Uncreate(curr_wave_end))
+        self.wait(WAIT_FOR_VO)
+        ###### CURRENT WAVE INITIAL ANIMATION  ######
          
 
         # phi of v(t) being zero
-        v_phi = MathTex(r"\phi = 0", font_size=50, color=YELLOW).move_to(v_text.get_right()).shift(RIGHT*2)
-        self.play(Create(v_phi))
-        v_text_phi = new_v_text.get_part_by_tex(r'\phi')
+        v_phi = MathTex(r"\phi_v = 0", font_size=50, color=YELLOW).move_to(v_text.get_right()).shift(RIGHT*2)
+        self.play(Write(v_phi))
+        v_text_phi = new_v_text.get_part_by_tex(r'\phi_v')
         v_text_phi_center = v_text_phi.get_center()
         new_v_phi = MathTex(r"0", font_size=50, color=YELLOW).move_to(v_text_phi_center)
-        self.play( Transform( v_phi, new_v_phi), )
+
+        self.wait(WAIT_FOR_VO)
+
+        self.play(Transform(v_phi, new_v_phi))
         self.play(FadeOut(v_phi))
         new_v_text = MathTex(
-            r"v(t) = V_{max} \cos(", r"\omega t", r")",
+            r"v(t) = V_{max} \cos(\omega t)",
             font_size=50,
             color=YELLOW
-        ).to_edge(UP).to_edge(LEFT).shift([1, 0.5, 0])
+        ).move_to(v_text.get_left(), aligned_edge=LEFT)
         self.play(Transform(v_text, new_v_text))
+
+        self.wait(WAIT_FOR_VO)
 
         # phase shift
         phase_shift = np.pi / 2
@@ -130,19 +148,19 @@ class CurrentVoltagePowerWave(Scene):
             run_time=2
         )
 
-        start_x = np.pi / 2
-        start_line = DashedLine(
+        start_x, end_x = np.pi / 2, np.pi
+        start_line, end_line = DashedLine(
             start=axes.c2p(start_x, 0),
             end=axes.c2p(start_x, -0.5),
             color=GRAY
-        )
-        end_x = np.pi
-        end_line = DashedLine(
+        ), DashedLine(
             start=axes.c2p(end_x, 0),
             end=axes.c2p(end_x, -0.5),
             color=GRAY
         )
-        self.play(Create(start_line))
+
+        self.play(Create(start_line), Create(end_line))
+
         arrow = Arrow(
             start=start_line.get_end(),
             end=end_line.get_end(),
@@ -155,24 +173,24 @@ class CurrentVoltagePowerWave(Scene):
             Create(end_line),
             Create(arrow),
         )
-        i_phase= MathTex(r"\phi", font_size=50, color=GREEN).move_to(brace.get_center()).shift(DOWN*0.5)
+        i_phase= MathTex(r"\phi_i", font_size=50, color=GREEN).move_to(brace.get_center()).shift(DOWN*0.5)
         self.play(
             Create(brace),
-            Create(i_phase)
+            Write(i_phase)
         )
 
         # omega = pi f t
         text_v_w= MathTex(
             r"\omega = 2\pi f",
             substrings_to_isolate="f"
-        ).to_edge(RIGHT).to_edge(UP).shift(LEFT*2)
-        self.play(Create(text_v_w))
+        ).to_edge(UP).align_to(new_v_text).shift(RIGHT * 2)
+        self.play(Write(text_v_w))
 
         self.wait(1)
         new_text_v_w = MathTex(
             r"\omega = 2\pi 60",
             substrings_to_isolate="60"
-        ).to_edge(RIGHT).to_edge(UP).shift(LEFT*2)
+        ).move_to(text_v_w, aligned_edge=LEFT)
         self.play(Transform(text_v_w, new_text_v_w))
 
         # frequency is constant 60
@@ -180,29 +198,30 @@ class CurrentVoltagePowerWave(Scene):
             r"\omega = 2\pi 60",
             substrings_to_isolate="60",
             color=YELLOW
-        ).move_to(text_v_w.get_left()).shift(UP*0.5)
+        ).move_to(new_text_v_w)
         i_w = MathTex(
             r"\omega = 2\pi 60",
             substrings_to_isolate="60",
             color=GREEN
-        ).move_to(text_v_w.get_left()).shift(DOWN*0.2)
+        ).move_to(new_text_v_w).align_to(new_i_text, direction=UP)
         omega_group = VGroup(*[v_w, i_w])
         self.play(Transform(text_v_w, omega_group))
 
         # substitutte 2pi60 to omega of i and v
         new_v_text = MathTex(
-            r"v(t) = V_{max} \cos(", r"2\pi 60t", r")",
+            r"v(t) = V_{max} \cos(2\pi 60t )",
             font_size=50,
             color=YELLOW
-        ).to_edge(UP).to_edge(LEFT).shift([1, 0.5, 0])
+        ).move_to(new_v_text.get_left(), aligned_edge=LEFT)
         new_i_text = MathTex(
-            r"i(t) = I_{max} \cos(", r"2\pi 60t", r"+ \phi", r")",
+            r"i(t) = I_{max} \cos(2\pi 60t + \phi_i)",
             font_size=50,
             color=GREEN
-        ).to_edge(UP).to_edge(LEFT).shift([1, -0.3, 0])
+        ).move_to(new_i_text.get_left(), aligned_edge=LEFT)
+
         self.play(
-            Transform( v_text, new_v_text ),
-            Transform( i_text, new_i_text )
+            Transform(v_text, new_v_text),
+            Transform(i_text, new_i_text)
         )
 
         self.play(FadeOut(VGroup(*[
@@ -215,8 +234,6 @@ class CurrentVoltagePowerWave(Scene):
         ])))
 
         
-
-
 class NegativePower(Scene):
     def init_setup(self):
         # in ac,
@@ -229,7 +246,7 @@ class NegativePower(Scene):
         AMP = 1
 
         volt_wave = axes.plot(lambda x: AMP * np.sin(x), color=YELLOW)
-        curr_phase= ValueTracker(np.pi/2)
+        curr_phase = ValueTracker(np.pi/2)
         curr_wave = always_redraw(
             lambda: axes.plot(lambda x: AMP * np.sin(x - curr_phase.get_value()) , color=GREEN)
         )
@@ -629,7 +646,26 @@ class Summary(Scene):
             font_size=50
         ).move_to(final_text.get_center()).shift(DOWN)
         self.play(Create(it_shifts))
-        
+
+class ACCircuitScenario(Scene):
+    # r270 = Resistor()
+    pass
+
+class IntroScene(Scene):
+    def construct(self):
+        center = Dot()
+        # self.add(center)
+        title_text = Tex("EEE 113 Wrap-Up Report", font_size=72)
+        title_text.move_to(center.get_center(), aligned_edge=DOWN)
+        subtitle_text = Tex("by Jian Jarapa \& Quintus Cruz")
+        subtitle_text.next_to(title_text, DOWN)
+
+        text_group = VGroup(title_text, subtitle_text)
+        self.play(Write(text_group, run_time=3.5))
+        self.wait(5.0)
+        self.play(Unwrite(text_group, run_time=1.5))
+        self.wait(1.0)
+        pass
         
 
 def main():
