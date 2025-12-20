@@ -1,7 +1,7 @@
 from manim import *
+from helper import play_replace_trans_full
 import numpy as np
 import math
-from helper import play_replace_trans_full
 
 class CurrentVoltagePowerWave(Scene):
     def construct(self):
@@ -141,21 +141,26 @@ class CurrentVoltagePowerWave(Scene):
                 color=GREEN
             ).move_to(i_text.get_left(), aligned_edge=LEFT)
 
+
         self.play(Create(axes), run_time=1)
         self.wait(0.5)
+
         # init voltage wave
         self.play(Create(volt_wave_end))
         volt_wave_end.add_updater(lambda f: f.move_to(volt_wave.get_end()))
         self.play(Create(volt_wave), run_time=2)
 
         self.wait(0.5)
+
         self.play(Write(v_text), run_time=0.5)
+
         self.wait(0.5)
+
         self.play(v_text.animate().center().to_edge(UP).to_edge(LEFT).shift(RIGHT))
 
-        # voltage formula
         v_text = play_replace_trans_full(self, v_text, v_text_formula())
         self.play(Uncreate(volt_wave_end))
+
         self.wait(WAIT_FOR_VO)
 
         # init current wave
@@ -168,11 +173,14 @@ class CurrentVoltagePowerWave(Scene):
         # current formula
         i_text = play_replace_trans_full(self, i_text, i_text_formula())
         self.play(Uncreate(curr_wave_end))
+
         self.wait(WAIT_FOR_VO)
 
         # phi of v(t) being zero
         self.play(Write(v_phi_init()))
+
         self.wait(WAIT_FOR_VO)
+
         v_phi = play_replace_trans_full(self, v_phi, v_phi_to_v_text())
         self.play(FadeOut(v_phi))
 
@@ -191,7 +199,9 @@ class CurrentVoltagePowerWave(Scene):
 
         # omega = pi f t
         self.play(Write(text_v_w_init()))
+
         self.wait(1)
+
         text_v_w = play_replace_trans_full(self, text_v_w, w_with_60_freq())
 
         # separate omega (w) formula into two
