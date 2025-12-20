@@ -7,5 +7,7 @@ requires-python = ">=3.13"
 dependencies = [
     "manim>=0.19.1",
     "manim-circuit",
-    "schemdraw"
+    "schemdraw",
+    "manim_voiceover",
+    "setuptools"
 ]
