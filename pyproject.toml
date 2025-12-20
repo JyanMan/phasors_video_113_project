@@ -8,6 +8,6 @@ dependencies = [
     "manim>=0.19.1",
     "manim-circuit",
     "schemdraw",
-    "manim_voiceover",
-    "setuptools"
+    "manim-voiceover",
+    "setuptools",
 ]

@@ -1,10 +1,16 @@
-from manim import *
-from helper import play_replace_trans_full
 import numpy as np
 import math
 
-class CurrentVoltagePowerWave(Scene):
+from manim import *
+from manim_voiceover import VoiceoverScene
+from manim_voiceover.services.recorder import RecorderService
+from manim_voiceover.services.gtts import GTTSService
+from helper import play_replace_trans_full
+
+class CurrentVoltagePowerWave(VoiceoverScene):
     def construct(self):
+        self.set_speech_service(GTTSService())
+
         WAIT_FOR_VO = 2.5
         AMP = 1
         axes = Axes(
@@ -142,37 +148,45 @@ class CurrentVoltagePowerWave(Scene):
             ).move_to(i_text.get_left(), aligned_edge=LEFT)
 
 
+
+        #### ANIMATION START ####
         self.play(Create(axes), run_time=1)
-        self.wait(0.5)
 
         # init voltage wave
-        self.play(Create(volt_wave_end))
-        volt_wave_end.add_updater(lambda f: f.move_to(volt_wave.get_end()))
-        self.play(Create(volt_wave), run_time=2)
-
-        self.wait(0.5)
-
-        self.play(Write(v_text), run_time=0.5)
-
-        self.wait(0.5)
-
-        self.play(v_text.animate().center().to_edge(UP).to_edge(LEFT).shift(RIGHT))
-
-        v_text = play_replace_trans_full(self, v_text, v_text_formula())
-        self.play(Uncreate(volt_wave_end))
-
-        self.wait(WAIT_FOR_VO)
+        with self.voiceover(
+            "With this measurement device, we were able to see the voltage"
+        ) as tracker:
+            self.play(Create(volt_wave_end), run_time=0.5)
+            volt_wave_end.add_updater(lambda f: f.move_to(volt_wave.get_end()))
+            self.play(Create(volt_wave), run_time=1)
+            self.play(Write(v_text), run_time=0.5)
 
         # init current wave
-        self.play(Create(curr_wave_end))
-        curr_wave_end.add_updater(lambda f: f.move_to(curr_wave.get_end()))
-        self.play(Create(curr_wave), run_time=2)
-        self.play(Write(i_text_end_curr_wave()), run_time=0.5)
-        self.play(i_text.animate().next_to(v_text, DOWN, aligned_edge=LEFT))
+        with self.voiceover("and current waveforms that come out of your outlet") as tracker:
+            self.play(
+                Create(curr_wave_end),
+                v_text.animate().center().to_edge(UP).to_edge(LEFT).shift(RIGHT)
+            )
+            curr_wave_end.add_updater(lambda f: f.move_to(curr_wave.get_end()))
+            self.play(Create(curr_wave), run_time=1)
+            self.play(Write(i_text_end_curr_wave()), run_time=0.5)
+            self.play(i_text.animate().next_to(v_text, DOWN, aligned_edge=LEFT))
 
-        # current formula
-        i_text = play_replace_trans_full(self, i_text, i_text_formula())
-        self.play(Uncreate(curr_wave_end))
+
+        with self.voiceover(
+            "and as we learned from school, these waveforms are\
+            mathematically defined as a sinusoid with amplitude\
+            V max and I max respectively of voltage and current"
+        ) as tracker:
+            # voltage formula
+            self.wait(3)
+            v_text = play_replace_trans_full(self, v_text, v_text_formula(), run_time=1)
+            self.play(Uncreate(volt_wave_end))
+            # current formula
+            self.wait(1)
+            i_text = play_replace_trans_full(self, i_text, i_text_formula())
+            self.play(Uncreate(curr_wave_end))
+
 
         self.wait(WAIT_FOR_VO)
 
