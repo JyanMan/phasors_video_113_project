@@ -341,89 +341,46 @@ class NegativePower(Scene):
                 color=MAROON_C
             )
         )
-
-        self.play(Create(power_wave), run_time=2)
-        p_of_t = MathTex("p(t)", font_size=50, color=MAROON_C).move_to(power_wave.get_end()).shift(RIGHT*0.5)
-        self.play(Create(p_of_t), run_time=0.5)
-
-        new_pow_formula = MathTex(
-            r"p(t) = v(t)i(t)",
-            color=MAROON_C,
-            font_size=50
-        ).to_edge(UP).shift(DOWN*0.5)
-        self.play(
-            Transform(p_of_t, new_pow_formula),
-            FadeOut(v_formula),
-            i_formula.animate().to_edge(DOWN)
-        )
+        p_of_t = MathTex(
+            "p(t)", font_size=50, color=MAROON_C
+        ).move_to(power_wave.get_end()).shift(RIGHT*0.5)
+        def p_of_t_formula():
+            return MathTex(
+                r"p(t) = v(t)i(t)",
+                color=MAROON_C,
+                font_size=50
+            ).to_edge(UP).shift(DOWN*0.5)
 
         phase_group = self.create_phase_indicator(axes)
-        self.play(
-            self.phase_to_zero_animation(phase_group),
-            curr_phase.animate().set_value(0),
-            pow_phase.animate().set_value(0),
-            pow_offset.animate().set_value(0),
-            run_time=3
-        )
-
         start_line = phase_group[0]
         end_line = phase_group[1]
         i_phase = phase_group[4]
-        new_i_phase = MathTex(
-            r"\phi =", r"\phantom{+0.00}",
-            font_size=50,
-            color=GREEN
-        ).move_to(i_phase.get_left()).shift(RIGHT*0.5)
-        i_phase_num = DecimalNumber(
-            number=curr_phase.get_value(),
-            num_decimal_places=2,
-            color=BLUE_C,
-        ).move_to(new_i_phase.get_right()).shift(RIGHT*0.5)
-        self.play(
-            FadeOut(end_line), FadeOut(start_line),
-            Transform(i_phase, new_i_phase),
-            Create(i_phase_num)
-        )
+        def i_phase_with_placeholder():
+            return MathTex(
+                r"\phi =", r"\phantom{+0.00}",
+                font_size=50,
+                color=GREEN
+            ).move_to(i_phase.get_left()).shift(RIGHT*0.5)
+        i_phase_val = DecimalNumber(0)
+        def i_phase_value():
+            i_phase_val = DecimalNumber(
+                number=curr_phase.get_value(),
+                num_decimal_places=2,
+                color=BLUE_C,
+            ).move_to(i_phase.get_right()).shift(RIGHT*0.5)
+            return i_phase_val
         def i_phase_updater(mob):
             value = curr_phase.get_value()
             mob.set_value(value)
-        i_phase_num.add_updater(i_phase_updater)
 
-        # focus on phi / i_phase
-        self.play(
-            FadeToColor(i_phase, color=BLUE_C),
-            FadeToColor(i_formula[3], color=BLUE_C)
-        )
-        new_i_formula = MathTex(
-            r"i(t) = I_{max} \cos(", r"2\pi 60t", r"\phantom{+}", r"\phantom{0.00}", r")",
-            substrings_to_isolate=[r"\phi"],
-            font_size=50,
-            color=GREEN
-        ).move_to(i_formula.get_center()).shift(RIGHT*0.2)
+        def i_formula_with_placeholder():
+            return  MathTex(
+                r"i(t) = I_{max} \cos(", r"2\pi 60t", r"\phantom{+}", r"\phantom{0.00}", r")",
+                substrings_to_isolate=[r"\phi"],
+                font_size=50,
+                color=GREEN
+            ).move_to(i_formula.get_center()).shift(RIGHT*0.2)
 
-        # set phi to a constant
-        # self.play(Transform(i_formula, new_i_formula) )
-        self.play(ReplacementTransform(i_formula, new_i_formula))
-        phase_number = MathTex(
-            r"+0.00",
-            color=BLUE_C,
-            font_size=50,
-        # ).move_to(i_formula.get_right()).shift(LEFT*2)
-        ).move_to(new_i_formula.get_right()).shift(LEFT*0.8)
-        def phase_number_updater(mob):
-            value = curr_phase.get_value()
-            sign = "+" if value >= 0 else "-"
-            mob.become(
-                MathTex(
-                    rf"{sign}{abs(value):.2f}",
-                    font_size=50,
-                    color=BLUE_C
-                ).move_to(mob.get_center())
-            )
-        phase_number.add_updater(phase_number_updater)
-        self.play(Create(phase_number))
-
-        # shift the current left and right
         def pow_offset_follow_current(mob):
             value = curr_phase.get_value() % (2 * np.pi)
             half_value = value % np.pi
@@ -435,16 +392,79 @@ class NegativePower(Scene):
             else:
                 value = sign * (1 - ratio) 
                 mob.set_value(-value)
-                
-        pow_offset.add_updater(pow_offset_follow_current)
 
-        # purely resistive load
+        phase_number = MathTex(
+            r"+0.00",
+            color=BLUE_C,
+            font_size=50,
+        # ).move_to(i_formula.get_right()).shift(LEFT*2)
+        )
+        def phase_number_init():
+            return phase_number.move_to(i_formula.get_right()).shift(LEFT*0.8)            
+
+        def phase_number_updater(mob):
+            value = curr_phase.get_value()
+            sign = "+" if value >= 0 else "-"
+            mob.become(
+                MathTex(
+                    rf"{sign}{abs(value):.2f}",
+                    font_size=50,
+                    color=BLUE_C
+                ).move_to(mob.get_center())
+            )
+
         purely_res_load = Text(
             "Purely Resistive Load", color=BLUE_C, font_size=40
         ).to_edge(RIGHT).shift(DOWN*2)
+
+        def phase_in_pi_terms():
+            return MathTex(
+                r"\approx 2\pi",
+                color=PINK
+            ).move_to(i_phase.get_right()).shift([0.2, -0.5, 0])
+
+        #### ANIMATION START ####
+
+        self.play(Create(power_wave), run_time=2)
+        self.play(Create(p_of_t), run_time=0.5)
+        self.play(
+            FadeOut(v_formula),
+            i_formula.animate().to_edge(DOWN)
+        )
+        play_replace_trans_full(self, p_of_t, p_of_t_formula())
+        self.play(
+            self.phase_to_zero_animation(phase_group),
+            curr_phase.animate().set_value(0),
+            pow_phase.animate().set_value(0),
+            pow_offset.animate().set_value(0),
+            run_time=3
+        )
+
+        i_phase = play_replace_trans_full(self, i_phase, i_phase_with_placeholder())
+        self.play(
+            FadeOut(end_line), FadeOut(start_line),
+            # Create(i_phase_with_placeholder()),
+            Create(i_phase_value())
+        )
+
+        # focus on phi / i_phase
+        self.play(
+            FadeToColor(i_phase, color=BLUE_C),
+            FadeToColor(i_formula[3], color=BLUE_C)
+        )
+        i_formula = play_replace_trans_full(self, i_formula, i_formula_with_placeholder())
+        i_phase_val.add_updater(i_phase_updater)
+
+        self.play(Create(phase_number_init()))
+        phase_number.add_updater(phase_number_updater)
+
+        # shift the current left and right
+        pow_offset.add_updater(pow_offset_follow_current)
+
+        # purely resistive load
         self.play(Create(purely_res_load))
 
-        self.wait(4)
+        self.wait(2)
         
         self.play(
             FadeOut(purely_res_load),
@@ -460,15 +480,12 @@ class NegativePower(Scene):
             curr_phase.animate().set_value(2*np.pi),
             pow_phase.animate().set_value(2*np.pi),
             lag_ratio=0.8,
-            # pos_offset.animate().set_value()
             run_time=8
         )
 
         # add approximation of phase in terms of pi
-        pi_terms_phase = MathTex(
-            r"\approx 2\pi",
-            color=PINK
-        ).move_to(new_i_phase.get_right()).shift([0.2, -0.5, 0])
-        self.play(Create(pi_terms_phase), run_time=0.5)
+        self.play(Create(phase_in_pi_terms()), run_time=0.5)
+
+        # PRE FADE OUT WITH EDITOR NALANG
 
 
