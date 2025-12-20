@@ -64,11 +64,11 @@ class Test(Scene):
                 color=GREEN
             ).move_to(i_text.get_left(), aligned_edge=LEFT)
 
-        v_phi = MathTex(r"\phi_v = 0", font_size=50, color=YELLOW).move_to(v_text.get_right()).shift(RIGHT*2)
+        v_phi = MathTex(r"\phi_v = 0", font_size=50, color=YELLOW).center()
         def v_phi_to_v_text():
-            v_text_phi = v_text.get_part_by_tex(r'\phi_v')
+            v_text_phi = v_text_formula().get_part_by_tex(r'\phi_v')[0]
             v_text_phi_center = v_text_phi.get_center()
-            MathTex(r"0", font_size=50, color=YELLOW).move_to(v_text_phi_center)
+            return MathTex(r"0", font_size=50, color=YELLOW).move_to(v_text_phi_center)
 
         self.play(Create(axes), run_time=1)
         self.wait(0.5)
@@ -102,7 +102,7 @@ class Test(Scene):
 
         self.wait(WAIT_FOR_VO)
 
-        self.play(ReplacementTransform(v_phi, v_phi_to_v_text()))
+        self.play(Transform(v_phi, v_phi_to_v_text()))
         self.play(FadeOut(v_phi))
 
 
