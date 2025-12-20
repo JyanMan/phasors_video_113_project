@@ -82,7 +82,6 @@ class CurrentVoltagePowerWave(Scene):
         self.play(Uncreate(curr_wave_end))
         self.wait(WAIT_FOR_VO)
         ###### CURRENT WAVE INITIAL ANIMATION  ######
-         
 
         # phi of v(t) being zero
         v_phi = MathTex(r"\phi_v = 0", font_size=50, color=YELLOW).move_to(v_text.get_right()).shift(RIGHT*2)
