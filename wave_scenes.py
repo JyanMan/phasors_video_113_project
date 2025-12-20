@@ -160,17 +160,16 @@ class CurrentVoltagePowerWave(VoiceoverScene):
             volt_wave_end.add_updater(lambda f: f.move_to(volt_wave.get_end()))
             self.play(Create(volt_wave), run_time=1)
             self.play(Write(v_text), run_time=0.5)
+            self.play(v_text.animate().center().to_edge(UP).to_edge(LEFT).shift(RIGHT))
+            self.play(Create(curr_wave_end), Uncreate(volt_wave_end))
 
         # init current wave
         with self.voiceover("and current waveforms that come out of your outlet") as tracker:
-            self.play(
-                Create(curr_wave_end),
-                v_text.animate().center().to_edge(UP).to_edge(LEFT).shift(RIGHT)
-            )
             curr_wave_end.add_updater(lambda f: f.move_to(curr_wave.get_end()))
             self.play(Create(curr_wave), run_time=1)
             self.play(Write(i_text_end_curr_wave()), run_time=0.5)
             self.play(i_text.animate().next_to(v_text, DOWN, aligned_edge=LEFT))
+            self.play(Uncreate(curr_wave_end))
 
 
         with self.voiceover(
@@ -179,13 +178,10 @@ class CurrentVoltagePowerWave(VoiceoverScene):
             V max and I max respectively of voltage and current"
         ) as tracker:
             # voltage formula
-            self.wait(3)
+            self.wait(6)
             v_text = play_replace_trans_full(self, v_text, v_text_formula(), run_time=1)
-            self.play(Uncreate(volt_wave_end))
             # current formula
-            self.wait(1)
             i_text = play_replace_trans_full(self, i_text, i_text_formula())
-            self.play(Uncreate(curr_wave_end))
 
 
         self.wait(WAIT_FOR_VO)
