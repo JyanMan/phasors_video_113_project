@@ -32,9 +32,12 @@ class IntroScene(VoiceoverScene):
         assumed_topics = Paragraph(
             "○ Ohm's Law (V = IR)",
             "○ Power Law (P = VI)",
+            "○ KCL and KVL",
+            "○ Pre-Calculus (Trigonometric Functions and Identities)",
+            "○ Complex Exponentiation",
             alignment='left',
             font_size=36
-        ).to_corner(UL)
+        ).to_corner(UL, buff=0.5)
         
         ### Slide 3 ###
 
@@ -58,8 +61,10 @@ class IntroScene(VoiceoverScene):
 
         self.play(Unwrite(assumed_topics))
 
-class PowerLaw(Scene):
+class PowerLawScene(VoiceoverScene):
     def construct(self):
+        self.set_speech_service(GTTSService())
+
         power_eqn = MathTex(r"P =", r"V", r"I", font_size=60)
         power_eqn_t = MathTex(r"p(t) =", r"v(t)", r"i(t)", font_size=60).next_to(power_eqn, DOWN)
 
@@ -87,40 +92,55 @@ class PowerLaw(Scene):
         i_phi_defn = MathTex(r"=\; ?")
         v_eqn_no_phi = MathTex(r"v(t)", r"=", r"V_{max}\cos(\omega t)")
 
-        self.play(Write(power_eqn))
-        self.wait()
-        self.play(Indicate(power_eqn.get_part_by_tex(r'V')))
-        self.play(Indicate(power_eqn.get_part_by_tex(r'I')))
-        self.wait()
-        self.play(ReplacementTransform(power_eqn.copy(), power_eqn_t))
-        self.play(power_eqn_t.animate.move_to(ORIGIN), FadeOut(power_eqn, shift=UP))
-        self.remove(power_eqn)
-        self.wait()
-        self.play(power_eqn_t.animate.to_corner(UL))
-        self.wait()
-        self.play(Indicate(power_eqn_t.get_part_by_tex(r'v(t)')))
-        self.play(ReplacementTransform(power_eqn_t.get_part_by_tex(r'v(t)').copy(), v_eqn.get_part_by_tex(r'v(t)'), path_arc=-120 * DEGREES))
-        self.play(ReplacementTransform(v_eqn.get_part_by_tex(r'v(t)'), v_eqn))
-        self.play(Indicate(power_eqn_t.get_part_by_tex(r'i(t)')))
-        self.play(ReplacementTransform(power_eqn_t.get_part_by_tex(r'i(t)').copy(), i_eqn.get_part_by_tex(r'i(t)'), path_arc=-120 * DEGREES))
-        self.play(ReplacementTransform(i_eqn.get_part_by_tex(r'i(t)'), i_eqn))
 
-        self.play(MoveToTarget(v_max), MoveToTarget(i_max))
-        self.play(FadeIn(v_max_defn, shift=RIGHT))
-        self.play(FadeIn(i_max_defn, shift=RIGHT))
-        self.play(FadeOut(v_max, shift=UP), FadeOut(v_max_defn, shift=UP), FadeOut(i_max, shift=DOWN), FadeOut(i_max_defn, shift=DOWN))
-        self.remove(v_max, v_max_defn, i_max, i_max_defn)
+        with self.voiceover("You may know that the power of a particular device in a DC Circuit is computed as P = V times I.") as tracker:
+            self.play(Write(power_eqn))
+            self.wait()
 
-        self.play(
-            ReplacementTransform(v_eqn.get_part_by_tex(r'\omega').copy(), omega, path_arc=120 * DEGREES),
-            ReplacementTransform(i_eqn.get_part_by_tex(r'\omega').copy(), omega, path_arc=120 * DEGREES)
-        )
-        self.play(FadeIn(omega_defn, shift=RIGHT))
-        self.play(
-            omega.animate.shift(LEFT),
-            omega_defn.animate.shift(LEFT),
-            FadeIn(omega_approx.shift(LEFT), shift=RIGHT)
-        )
+        with self.voiceover("However, unlike in AC Circuits, V and I are just static values and don't change over time.") as tracker:
+            self.play(Indicate(power_eqn.get_part_by_tex(r'V')))
+            self.play(Indicate(power_eqn.get_part_by_tex(r'I')))
+            self.wait()
+
+        with self.voiceover("Well, in AC, we can just turn these variables, V and I, into their functional counterparts, v of t and i of t!") as tracker:
+            self.play(ReplacementTransform(power_eqn.copy(), power_eqn_t))
+            self.play(power_eqn_t.animate.move_to(ORIGIN), FadeOut(power_eqn, shift=UP))
+            self.remove(power_eqn)
+            self.wait()
+            self.play(power_eqn_t.animate.to_corner(UL))
+            self.wait()
+            self.play(Indicate(power_eqn_t.get_part_by_tex(r'v(t)')))
+            self.play(ReplacementTransform(power_eqn_t.get_part_by_tex(r'v(t)').copy(), v_eqn.get_part_by_tex(r'v(t)'), path_arc=-120 * DEGREES))
+            self.play(ReplacementTransform(v_eqn.get_part_by_tex(r'v(t)'), v_eqn))
+            self.play(Indicate(power_eqn_t.get_part_by_tex(r'i(t)')))
+            self.play(ReplacementTransform(power_eqn_t.get_part_by_tex(r'i(t)').copy(), i_eqn.get_part_by_tex(r'i(t)'), path_arc=-120 * DEGREES))
+            self.play(ReplacementTransform(i_eqn.get_part_by_tex(r'i(t)'), i_eqn))
+
+        with self.voiceover("Of course, this also has the effect of making P turn into a function of time as well, p of t!"):
+            pass
+
+        with self.voiceover("In our case, we are only interested in AC circuits that power our appliances. In particular, the Philippine power grid is set to have a sinusoid voltage with a V_rms of 220 Volts.") as tracker:
+            self.play(MoveToTarget(v_max), MoveToTarget(i_max))
+            self.play(FadeIn(v_max_defn, shift=RIGHT))
+            self.play(FadeIn(i_max_defn, shift=RIGHT))
+
+        with self.voiceover("Thus v of t and i of t have the following mathematical forms, where V max is V-RMS times square root of 2 and I max is I-RMS times square root of 2.") as tracker:
+            self.play(FadeOut(v_max, shift=UP), FadeOut(v_max_defn, shift=UP), FadeOut(i_max, shift=DOWN), FadeOut(i_max_defn, shift=DOWN))
+            self.remove(v_max, v_max_defn, i_max, i_max_defn)
+
+
+        with self.voiceover("Both of these functions have omega in the argument and since our electricity in the Philippines runs at a frequency of 60 Hertz, this would actually be equal to 2 pi 60 or approximately 377. Conventionally, this is the number engineers use to approximate calculations. However, to stay mathematically precise, let's just keep it to be omega.") as tracker:
+            self.play(
+                ReplacementTransform(v_eqn.get_part_by_tex(r'\omega').copy(), omega, path_arc=120 * DEGREES),
+                ReplacementTransform(i_eqn.get_part_by_tex(r'\omega').copy(), omega, path_arc=120 * DEGREES)
+            )
+            self.play(FadeIn(omega_defn, shift=RIGHT))
+            self.play(
+                omega.animate.shift(LEFT),
+                omega_defn.animate.shift(LEFT),
+                FadeIn(omega_approx.shift(LEFT), shift=RIGHT)
+            )
+
         self.play(FadeOut(omega, shift=UP), FadeOut(omega_defn, shift=UP), FadeOut(omega_approx, shift=UP))
         self.remove(omega, omega_defn, omega_approx)
 
@@ -131,57 +151,231 @@ class PowerLaw(Scene):
         v_phi_defn.next_to(v_phi, RIGHT)
         i_phi_defn.next_to(i_phi, RIGHT)
 
-        self.play(TransformMatchingShapes(v_eqn.get_part_by_tex(r'\phi_v'), v_phi))
-        self.play(FadeIn(v_phi_defn, shift=RIGHT))
+        with self.voiceover("As you'll see later, phi v is actually zero, since it would be our *reference* waveform. What this means would be more apparent in the next slide. But if you've used an oscilloscope before, this is the same as setting a particular channel to be what triggers the oscilloscope to take a snapshot of a waveform.") as tracker:
+            self.play(TransformMatchingShapes(v_eqn.get_part_by_tex(r'\phi_v'), v_phi))
+            self.play(FadeIn(v_phi_defn, shift=RIGHT))
 
-        v_eqn_no_phi.move_to(v_eqn, aligned_edge=LEFT)
-
-        # # don't fucking ask :sob: i know... i know...
-        # # no more of that cursed bullshit...
+            v_eqn_no_phi.move_to(v_eqn, aligned_edge=LEFT)
 
         self.play(
             FadeOut(v_phi, shift=RIGHT),
             FadeOut(v_phi_defn, shift=RIGHT),
         )
 
-        self.play(TransformMatchingShapes(i_eqn.get_part_by_tex(r'\phi_i').copy(), i_phi))
-        self.play(FadeIn(i_phi_defn, shift=RIGHT))
+        with self.voiceover("And it follows that whatever phi i is would just be relative to the phase of the voltage since it is our reference waveform.") as tracker:
+            self.play(TransformMatchingShapes(i_eqn.get_part_by_tex(r'\phi_i').copy(), i_phi))
+            self.play(FadeIn(i_phi_defn, shift=RIGHT))
+            self.wait(1.0)
+
+        with self.voiceover("But let's cover that later, as what I mean by 'relative to the phase of voltage' would be a lot more obvious in a visualization") as tracker:
+            self.play(FadeOut(i_phi, shift=UP), FadeOut(i_phi_defn, shift=UP))
+            self.wait(2.0)
+
+        with self.voiceover("Our voltage and current functions would then have the following form:") as tracker:
+            i_eqn_new = MathTex(r"i(t)", r"=", r"I_{max} \cos(\omega t + \phi_i)").move_to(i_eqn, aligned_edge=LEFT)
+            eqn_group_new = VGroup(v_eqn_no_phi, i_eqn_new)
+
+            self.play(Unwrite(eqn_group))
+            self.play(Write(eqn_group_new))
+
+        with self.voiceover("Which has this effect on the power function:") as tracker:
+            self.play(power_eqn_t.animate.move_to(ORIGIN))
+
+            power_eqn_p1 = MathTex(r"p(t) =", r"V_{max}\cos(\omega t)", r"i(t)", font_size=60)
+            power_eqn_p2 = MathTex(r"p(t) =", r"V_{max}\cos(\omega t)", r"I_{max} \cos(\omega t + \phi_i)", font_size=60)
+
+            self.play(Indicate(v_eqn_no_phi.get_part_by_tex(r"V_{max}\cos(\omega t)")))
+            self.play(TransformMatchingTex(power_eqn_t, power_eqn_p1))
+            self.play(Indicate(i_eqn_new.get_part_by_tex(r"I_{max} \cos(\omega t + \phi_i)")))
+            self.play(TransformMatchingTex(power_eqn_p1, power_eqn_p2))
+            self.play(power_eqn_p2.animate.to_corner(UL))
+            self.wait(1.0)
+
+        with self.voiceover("Now you may recall that these two functions are related to one another by the AC counterpart of resistance, impedance.") as tracker:
+            pass
+
+        with self.voiceover("This follows from the Ohm's Law of DC Circuits where V is equal to I times R, or if rearranged, R is equal to V over I.") as tracker:
+            ohms_law = MathTex(r"V = IR")
+            ohms_law_r = MathTex(r"R = \frac{V}{I}")
+            o_law_eqns = VGroup(ohms_law, ohms_law_r).arrange(buff=0.25, direction=DOWN)
+            self.play(Write(o_law_eqns))
+
+            ohms_law_rt = MathTex(r"R(t) = \frac{v(t)}{i(t)}").move_to(ohms_law_r, aligned_edge=DOWN).shift(DOWN * 0.25)
+            self.play(TransformMatchingTex(ohms_law_r, ohms_law_rt))
+            wondering = MathTex(r"???").next_to(ohms_law_rt, DOWN)
+            self.play(FadeIn(wondering, shift=DOWN))
+            self.wait(0.5)
+            self.play(FadeOut(wondering, shift=DOWN))
+
         self.wait(1.0)
-        self.play(FadeOut(i_phi, shift=UP), FadeOut(i_phi_defn, shift=UP))
-        self.wait(2.0)
 
-        i_eqn_new = MathTex(r"i(t)", r"=", r"I_{max} \cos(\omega t + \phi_i)").move_to(i_eqn, aligned_edge=LEFT)
-        eqn_group_new = VGroup(v_eqn_no_phi, i_eqn_new)
+class PhasorAnalysisAssumptions(Scene):
+    def construct(self):
+        euler_iden = MathTex(r"Ae^{jx}", r"=", r"A\cos(x)", r"+ Aj\sin(x)")
+        euler_iden_rp = MathTex(r"\operatorname{Re}(", r"Ae^{jx}", r")", r"=", r"A\cos(x)")
+        euler_iden_rp_t1 = VGroup(
+            MathTex(r"\operatorname{Re}(", r"Ae^{jx}", r")", r"=", r"A\cos(x)", ","),
+            Tex(r"Let $x = \omega t$")
+        ).arrange(RIGHT)
+        euler_iden_wt1 = MathTex(r"\operatorname{Re}(", r"Ae^{j(\omega t)}", r")", r"=", r"A\cos(\omega t)")
+        euler_iden_wt2 = MathTex(r"A\cos(\omega t)",  r"=", r"\operatorname{Re}(", r"Ae^{j(\omega t)}", r")",)
 
-        self.play(Unwrite(eqn_group))
-        self.play(Write(eqn_group_new))
-
-        self.play(power_eqn_t.animate.move_to(ORIGIN))
-
-        power_eqn_p1 = MathTex(r"p(t) =", r"V_{max}\cos(\omega t)", r"i(t)", font_size=60)
-        power_eqn_p2 = MathTex(r"p(t) =", r"V_{max}\cos(\omega t)", r"I_{max} \cos(\omega t + \phi_i)", font_size=60)
-
-        self.play(Indicate(v_eqn_no_phi.get_part_by_tex(r"V_{max}\cos(\omega t)")))
-        self.play(TransformMatchingTex(power_eqn_t, power_eqn_p1))
-        self.play(Indicate(i_eqn_new.get_part_by_tex(r"I_{max} \cos(\omega t + \phi_i)")))
-        self.play(TransformMatchingTex(power_eqn_p1, power_eqn_p2))
-        self.play(power_eqn_p2.animate.to_corner(UL))
+        euler_iden_factored1 = MathTex(
+            r"Ae^{jx}", r"=",
+            r"\operatorname{Re}(" r"Ae^{jx}", r")", r"+",
+            r"\operatorname{Im}(" r"Ae^{jx}", r")"
+        )
+        euler_iden_factored2 = MathTex(
+            r"Ae^{jx}", r"=",
+            r"\operatorname{Re}(" r"Ae^{jx}", r")", r"+",
+            r"\operatorname{Im}(" r"Ae^{jx}", r")"
+        )
         
+        v_func_iden1 = MathTex(
+            r"v(t)", r" = V_{max}", r"\cos(\omega t)"
+        )
+        v_func_iden2 = MathTex(
+            r"v(t)", r"=", "\operatorname{Re}(", r"V_{max}", r"e^{j(\omega t)}", r")"
+        )
+        v_func_iden3 = MathTex(
+            r"v(t)", r"=", "\operatorname{Re}(", r"V_{max}", r"e^{j\omega t}", r")"
+        )
+        v_func_iden4 = MathTex(
+            r"v(t)", r"=",
+            "\operatorname{Re}(", r"e^{j\omega t}", r")",
+            r"\big[", r"V_{max}", r"\big]"
+        )
+
+        i_func_iden1 = MathTex(
+            r"i(t)", r"=", "\operatorname{Re}(", r"I_{max}", r"e^{j(\omega t + \phi_i)}", r")"
+        )
+        i_func_iden2 = MathTex(
+            r"i(t)", r"=", "\operatorname{Re}(", r"I_{max}", r"e^{j\omega t}", r"\cdot", r"e^{j\phi_i}", r")"
+        )
+        i_func_iden3 = MathTex(
+            r"i(t)",  r"=",
+            "\operatorname{Re}(", r"e^{j\omega t}", r")",
+            r"\big[",
+            r"I_{max}", r"\cdot", "\operatorname{Re}(", r"e^{j\phi_i}", r")",
+            r"\big]"
+        )
+
+        p_func1 = MathTex(
+            r"p(t)", r"=", r"v(t)", r"\cdot", r"i(t)"
+        )
+        p_func2 = MathTex(
+            r"p(t)", r"=", r"\big[",
+            r"\operatorname{Re}(", r"V_{max}", "e^{j\omega t}", r")", r"\big]", r"\cdot", r"\big[",
+            r"\operatorname{Re}(", r"I_{max}", r"e^{j\omega t}", r"\cdot", r"e^{j\phi_i}", r")"
+            r"\big]",
+        )
+        p_func3 = MathTex(
+            r"p(t)", r"=", r"\big[",
+            r"V_{max}", r"\operatorname{Re}(", "e^{j\omega t}", r")", r"\big]", r"\cdot",
+            r"\big[",
+            r"I_{max}", r"\operatorname{Re}(", r"e^{j\omega t}", r")", r"\cdot",
+            r"\operatorname{Re}(", r"e^{j\phi_i}", r")", r"\big]",
+        )
+        p_func4 = MathTex(
+            r"p(t)", r"=", r"\operatorname{Re}(", "e^{j\omega t}", r")",
+            r"\big[", r"V_{max}", r"\big]", r"\cdot",
+            r"\big[", r"I_{max}", r"\operatorname{Re}(", r"e^{j\phi_i}", r")", r"\big]",
+        )
+
+        v_phasor = MathTex(
+            r"\vec{V}", r"=", r"V_{max}", r"\angle{0^{\circ}}"
+        )
+
+        i_phasor = MathTex(
+            r"\vec{I}", r"=", r"I_{max}", r"\angle{\phi_i}"
+        )
+
+        s_phasor_p1 = MathTex(
+            r"\vec{S}", r"=", r"\vec{V}", r"\cdot", r"\vec{I}^*"
+        )
+
+        s_phasor_p2 = MathTex(
+            r"\vec{S}", r"=", r"V_{max}\angle{0^{\circ}}", r"\cdot", r"I_{max}", r"\angle{-\phi_i}"
+        )
+
+        self.play(Write(euler_iden))
+        self.play(
+            AnimationGroup(
+                FadeOut(euler_iden, shift=UP),
+                FadeIn(euler_iden_rp, shift=UP),
+                lag_ratio=-0.25                      
+            )
+        )
+        self.play(TransformMatchingTex(euler_iden_rp, euler_iden_rp_t1))
+        self.play(TransformMatchingTex(euler_iden_rp_t1, euler_iden_wt1))
+
+        ###############################################################
+        self.play(
+            AnimationGroup(
+                euler_iden_wt1.animate.shift(UP * 0.75),
+                FadeIn(v_func_iden1, shift=UP),
+                lag_ratio=-0.25                      
+            )
+        )
+        euler_iden_wt2.move_to(euler_iden_wt1)
+        self.play(TransformMatchingTex(v_func_iden1, v_func_iden2), TransformMatchingTex(euler_iden_wt1, euler_iden_wt2))
+
+        self.play(
+            AnimationGroup(
+                FadeOut(euler_iden_wt2, shift=UP),
+                v_func_iden2.animate.to_corner(UL),
+                lag_ratio=0.80
+            )
+        )
+        v_func_iden3.move_to(v_func_iden2, aligned_edge=LEFT)
+        self.play(TransformMatchingTex(v_func_iden2, v_func_iden3))
+
+        ###############################################################
+
+        self.play(FadeIn(i_func_iden1, shift=UP))
+        self.play(TransformMatchingTex(i_func_iden1, i_func_iden2))
+        # self.play(TransformMatchingTex(i_func_iden2, i_func_iden3))
+        self.play(i_func_iden2.animate.next_to(v_func_iden3, aligned_edge=LEFT, direction=DOWN))
+        v_func_iden4.move_to(v_func_iden3, aligned_edge=LEFT)
+        i_func_iden3.move_to(i_func_iden2, aligned_edge=LEFT)
+
+        ###############################################################
+
+        self.play(FadeIn(p_func1, shift=UP))
+        self.play(TransformMatchingTex(p_func1, p_func2))
+        self.play(Indicate(VGroup(*p_func2[3:7]), scale_factor=1.05))
+        self.play(Indicate(VGroup(*v_func_iden3[2:]), scale_factor=1.05))
+        self.play(Indicate(VGroup(*p_func2[10:15]), scale_factor=1.05))
+        self.play(Indicate(VGroup(*i_func_iden2[2:]), scale_factor=1.05))
+        self.play(TransformMatchingTex(p_func2, p_func3))
+        self.play(TransformMatchingTex(p_func3, p_func4))
+
+        self.play(TransformMatchingTex(v_func_iden3, v_func_iden4))
+        self.play(TransformMatchingTex(i_func_iden2, i_func_iden3))
+
+        v_phasor.move_to(v_func_iden4, aligned_edge=LEFT)
+        i_phasor.move_to(i_func_iden3, aligned_edge=LEFT)
+
+        self.play(TransformMatchingTex(v_func_iden4, v_phasor), TransformMatchingTex(i_func_iden3, i_phasor))
+        self.play(
+            AnimationGroup(
+                FadeOut(p_func4, shift=UP),
+                FadeIn(s_phasor_p1, shift=UP),
+                lag_ratio=-0.25                      
+            )
+        )
+        self.play(TransformMatchingTex(s_phasor_p1, s_phasor_p2))
+        self.play(s_phasor_p2.animate.next_to(i_phasor, aligned_edge=LEFT))
+
+        self.play(Unwrite(v_phasor, i_phasor, s_phasor_p2))
+
+        # self.play(TransformMatchingTex(p_func4, p_func5))
+        # self.play(Indicate(VGroup(*p_func5[2:5])))
+        # self.play(Indicate(VGroup(*p_func5[6:12])))
+
         self.wait(1.0)
-
-        ohms_law = MathTex(r"V = IR")
-        ohms_law_r = MathTex(r"R = \frac{V}{I}")
-        o_law_eqns = VGroup(ohms_law, ohms_law_r).arrange(buff=0.25, direction=DOWN)
-        self.play(Write(o_law_eqns))
-
-        ohms_law_rt = MathTex(r"R(t) = \frac{v(t)}{i(t)}").move_to(ohms_law_r, aligned_edge=DOWN).shift(DOWN * 0.25)
-        self.play(TransformMatchingTex(ohms_law_r, ohms_law_rt))
-        wondering = MathTex(r"???").next_to(ohms_law_rt, DOWN)
-        self.play(FadeIn(wondering, shift=DOWN))
-        self.play(FadeOut(wondering, shift=DOWN))
-
-        self.wait(1.0)
-
+        
+        pass
 
 class RecallPower(Scene):
     def construct(self):
