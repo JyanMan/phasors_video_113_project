@@ -34,7 +34,6 @@ class IntroScene(VoiceoverScene):
             "○ Power Law (P = VI)",
             "○ KCL and KVL",
             "○ Pre-Calculus (Trigonometric Functions and Identities)",
-            "○ Complex Exponentiation",
             alignment='left',
             font_size=36
         ).to_corner(UL, buff=0.5)
@@ -55,7 +54,7 @@ class IntroScene(VoiceoverScene):
             self.wait(tracker.duration + 1.5)
             self.play(Unwrite(question_text))
 
-        with self.voiceover("This video assumes basic knowledge of the following concepts from DC Circuit Analysis."):
+        with self.voiceover("This video assumes basic knowledge of the following concepts from DC Circuit Analysis and Pre-Calculus.."):
             self.play(Write(assumed_topics), run_time=1.5)
             self.wait(tracker.duration)
 
@@ -63,10 +62,10 @@ class IntroScene(VoiceoverScene):
 
 class PowerLawScene(VoiceoverScene):
     def construct(self):
-        self.set_speech_service(GTTSService())
+        self.set_speech_service(GTTSService(transcription_model=None))
 
         power_eqn = MathTex(r"P =", r"V", r"I", font_size=60)
-        power_eqn_t = MathTex(r"p(t) =", r"v(t)", r"i(t)", font_size=60).next_to(power_eqn, DOWN)
+        power_eqn_t = MathTex(r"p(t)", r"=", r"v(t)", r"i(t)", font_size=60).next_to(power_eqn, DOWN)
 
         v_eqn = MathTex(r"v(t)", r"= ", r"V_{max}", r"\cos(", r"\omega", r"t", r"+", r"\phi_v", r")")
         i_eqn = MathTex(r"i(t)", r"= ", r"I_{max}", r"\cos(", r"\omega", r"t", r"+", r"\phi_i", r")").next_to(v_eqn, DOWN)
@@ -97,49 +96,65 @@ class PowerLawScene(VoiceoverScene):
             self.play(Write(power_eqn))
             self.wait()
 
-        with self.voiceover("However, unlike in AC Circuits, V and I are just static values and don't change over time.") as tracker:
+        with self.voiceover("However, unlike in AC Circuits,") as tracker:
+            pass
+
+        with self.voiceover("V and I are just static values and don't change over time.") as tracker:
             self.play(Indicate(power_eqn.get_part_by_tex(r'V')))
             self.play(Indicate(power_eqn.get_part_by_tex(r'I')))
             self.wait()
 
-        with self.voiceover("Well, in AC, we can just turn these variables, V and I, into their functional counterparts, v of t and i of t!") as tracker:
+        with self.voiceover("Well, in AC, we can just turn these variables, V and I, into their functional counterparts,") as tracker:
             self.play(ReplacementTransform(power_eqn.copy(), power_eqn_t))
             self.play(power_eqn_t.animate.move_to(ORIGIN), FadeOut(power_eqn, shift=UP))
             self.remove(power_eqn)
             self.wait()
-            self.play(power_eqn_t.animate.to_corner(UL))
-            self.wait()
+
+        self.play(power_eqn_t.animate.to_corner(UL))
+
+        with self.voiceover("v of t and "):
             self.play(Indicate(power_eqn_t.get_part_by_tex(r'v(t)')))
             self.play(ReplacementTransform(power_eqn_t.get_part_by_tex(r'v(t)').copy(), v_eqn.get_part_by_tex(r'v(t)'), path_arc=-120 * DEGREES))
             self.play(ReplacementTransform(v_eqn.get_part_by_tex(r'v(t)'), v_eqn))
+
+        with self.voiceover("i of t"):
             self.play(Indicate(power_eqn_t.get_part_by_tex(r'i(t)')))
             self.play(ReplacementTransform(power_eqn_t.get_part_by_tex(r'i(t)').copy(), i_eqn.get_part_by_tex(r'i(t)'), path_arc=-120 * DEGREES))
             self.play(ReplacementTransform(i_eqn.get_part_by_tex(r'i(t)'), i_eqn))
 
         with self.voiceover("Of course, this also has the effect of making P turn into a function of time as well, p of t!"):
+            self.play(Indicate(power_eqn_t.get_part_by_tex(r'p(t)')))
+
+        with self.voiceover("In our case, we are only interested in AC circuits that power our appliances. In particular, the Philippine power grid is set to have a sinusoid voltage with a V RMS of 220 Volts.") as tracker:
             pass
 
-        with self.voiceover("In our case, we are only interested in AC circuits that power our appliances. In particular, the Philippine power grid is set to have a sinusoid voltage with a V_rms of 220 Volts.") as tracker:
-            self.play(MoveToTarget(v_max), MoveToTarget(i_max))
-            self.play(FadeIn(v_max_defn, shift=RIGHT))
-            self.play(FadeIn(i_max_defn, shift=RIGHT))
+        self.play(MoveToTarget(v_max), MoveToTarget(i_max))
+        self.play(FadeIn(v_max_defn, shift=RIGHT))
+        self.play(FadeIn(i_max_defn, shift=RIGHT))
 
-        with self.voiceover("Thus v of t and i of t have the following mathematical forms, where V max is V-RMS times square root of 2 and I max is I-RMS times square root of 2.") as tracker:
-            self.play(FadeOut(v_max, shift=UP), FadeOut(v_max_defn, shift=UP), FadeOut(i_max, shift=DOWN), FadeOut(i_max_defn, shift=DOWN))
-            self.remove(v_max, v_max_defn, i_max, i_max_defn)
+        with self.voiceover("Thus v of t and i of t have the following mathematical forms, where V max is V RMS times square root of 2 and I max is I RMS times square root of 2.") as tracker:
+            pass
 
+        self.play(FadeOut(v_max, shift=UP), FadeOut(v_max_defn, shift=UP), FadeOut(i_max, shift=DOWN), FadeOut(i_max_defn, shift=DOWN))
+        self.remove(v_max, v_max_defn, i_max, i_max_defn)
 
-        with self.voiceover("Both of these functions have omega in the argument and since our electricity in the Philippines runs at a frequency of 60 Hertz, this would actually be equal to 2 pi 60 or approximately 377. Conventionally, this is the number engineers use to approximate calculations. However, to stay mathematically precise, let's just keep it to be omega.") as tracker:
+        
+        with self.voiceover("Both of these functions have omega in the argument and since our electricity in the Philippines runs at a frequency of 60 Hertz, this would actually be equal to ") as tracker:
             self.play(
                 ReplacementTransform(v_eqn.get_part_by_tex(r'\omega').copy(), omega, path_arc=120 * DEGREES),
                 ReplacementTransform(i_eqn.get_part_by_tex(r'\omega').copy(), omega, path_arc=120 * DEGREES)
             )
+
+        with self.voiceover("2 pi 60 or approximately 377. Conventionally, this is the number engineers use to approximate calculations.") as tracker: 
             self.play(FadeIn(omega_defn, shift=RIGHT))
             self.play(
                 omega.animate.shift(LEFT),
                 omega_defn.animate.shift(LEFT),
                 FadeIn(omega_approx.shift(LEFT), shift=RIGHT)
             )
+
+        with self.voiceover("However, to stay mathematically precise, let's just keep it to be omega.") as tracker:
+            pass
 
         self.play(FadeOut(omega, shift=UP), FadeOut(omega_defn, shift=UP), FadeOut(omega_approx, shift=UP))
         self.remove(omega, omega_defn, omega_approx)
@@ -151,36 +166,40 @@ class PowerLawScene(VoiceoverScene):
         v_phi_defn.next_to(v_phi, RIGHT)
         i_phi_defn.next_to(i_phi, RIGHT)
 
-        with self.voiceover("As you'll see later, phi v is actually zero, since it would be our *reference* waveform. What this means would be more apparent in the next slide. But if you've used an oscilloscope before, this is the same as setting a particular channel to be what triggers the oscilloscope to take a snapshot of a waveform.") as tracker:
+        with self.voiceover("As you'll see later, phi v is actually zero, since it would be our *reference* waveform.") as tracker: 
             self.play(TransformMatchingShapes(v_eqn.get_part_by_tex(r'\phi_v'), v_phi))
             self.play(FadeIn(v_phi_defn, shift=RIGHT))
 
             v_eqn_no_phi.move_to(v_eqn, aligned_edge=LEFT)
+
+        with self.voiceover("What this means would be more apparent in the next slide. But if you've used an oscilloscope before, this is the same as setting a particular channel to be what triggers the oscilloscope to take a snapshot of a waveform.") as tracker:
+            pass
 
         self.play(
             FadeOut(v_phi, shift=RIGHT),
             FadeOut(v_phi_defn, shift=RIGHT),
         )
 
-        with self.voiceover("And it follows that whatever phi i is would just be relative to the phase of the voltage since it is our reference waveform.") as tracker:
+        with self.voiceover("And it follows that whatever phi i is would just be relative to the phase of the voltage since that was what we chose to be our reference waveform.") as tracker:
             self.play(TransformMatchingShapes(i_eqn.get_part_by_tex(r'\phi_i').copy(), i_phi))
             self.play(FadeIn(i_phi_defn, shift=RIGHT))
-            self.wait(1.0)
 
-        with self.voiceover("But let's cover that later, as what I mean by 'relative to the phase of voltage' would be a lot more obvious in a visualization") as tracker:
+        self.wait(1.0)
+
+        with self.voiceover("But let's cover that later, as what I mean by 'relative to the phase of voltage' would be a lot more obvious in a visualization.") as tracker:
             self.play(FadeOut(i_phi, shift=UP), FadeOut(i_phi_defn, shift=UP))
             self.wait(2.0)
 
         with self.voiceover("Our voltage and current functions would then have the following form:") as tracker:
+            pass
             i_eqn_new = MathTex(r"i(t)", r"=", r"I_{max} \cos(\omega t + \phi_i)").move_to(i_eqn, aligned_edge=LEFT)
             eqn_group_new = VGroup(v_eqn_no_phi, i_eqn_new)
 
-            self.play(Unwrite(eqn_group))
-            self.play(Write(eqn_group_new))
+        self.play(Unwrite(eqn_group))
+        self.play(Write(eqn_group_new))
 
+        self.play(power_eqn_t.animate.move_to(ORIGIN))
         with self.voiceover("Which has this effect on the power function:") as tracker:
-            self.play(power_eqn_t.animate.move_to(ORIGIN))
-
             power_eqn_p1 = MathTex(r"p(t) =", r"V_{max}\cos(\omega t)", r"i(t)", font_size=60)
             power_eqn_p2 = MathTex(r"p(t) =", r"V_{max}\cos(\omega t)", r"I_{max} \cos(\omega t + \phi_i)", font_size=60)
 
@@ -194,23 +213,46 @@ class PowerLawScene(VoiceoverScene):
         with self.voiceover("Now you may recall that these two functions are related to one another by the AC counterpart of resistance, impedance.") as tracker:
             pass
 
+        ohms_law = MathTex(r"V = IR")
+        ohms_law_r = MathTex(r"R = \frac{V}{I}")
+        o_law_eqns = VGroup(ohms_law, ohms_law_r).arrange(buff=0.25, direction=DOWN)
+        ohms_law_rt = MathTex(r"R(t) = \frac{v(t)}{i(t)}").move_to(ohms_law_r, aligned_edge=DOWN).shift(DOWN * 0.25)
         with self.voiceover("This follows from the Ohm's Law of DC Circuits where V is equal to I times R, or if rearranged, R is equal to V over I.") as tracker:
-            ohms_law = MathTex(r"V = IR")
-            ohms_law_r = MathTex(r"R = \frac{V}{I}")
-            o_law_eqns = VGroup(ohms_law, ohms_law_r).arrange(buff=0.25, direction=DOWN)
-            self.play(Write(o_law_eqns))
 
-            ohms_law_rt = MathTex(r"R(t) = \frac{v(t)}{i(t)}").move_to(ohms_law_r, aligned_edge=DOWN).shift(DOWN * 0.25)
+            self.play(Write(o_law_eqns))
+            self.wait(tracker.duration)
+
             self.play(TransformMatchingTex(ohms_law_r, ohms_law_rt))
+
+
+        with self.voiceover("But here we see two problems,"):
+            pass
+
+        with self.voiceover("Number 1."):
+            pass
+
+        with self.voiceover("P of t is a multiplication of sinusoids which is difficult to calculate."):
+            self.play(Indicate(power_eqn_p2))
+
+        with self.voiceover("Number 2."):
+            pass
+
+        with self.voiceover("It seems our impedance is a function of time, but we know that the impedance in a circuit is constant!"):
             wondering = MathTex(r"???").next_to(ohms_law_rt, DOWN)
+            self.wait(0.65)
             self.play(FadeIn(wondering, shift=DOWN))
             self.wait(0.5)
             self.play(FadeOut(wondering, shift=DOWN))
 
-        self.wait(1.0)
+        with self.voiceover("Okay, how about we approach this from a visual perspective. Let's try graphing v of t and i of t!"):
+            pass
 
-class PhasorAnalysisAssumptions(Scene):
+        self.wait(2.0)
+
+class PhasorAnalysisAssumptions(VoiceoverScene):
     def construct(self):
+        self.set_speech_service(GTTSService(transcription_model=None))
+
         euler_iden = MathTex(r"Ae^{jx}", r"=", r"A\cos(x)", r"+ Aj\sin(x)")
         euler_iden_rp = MathTex(r"\operatorname{Re}(", r"Ae^{jx}", r")", r"=", r"A\cos(x)")
         euler_iden_rp_t1 = VGroup(
@@ -298,27 +340,51 @@ class PhasorAnalysisAssumptions(Scene):
             r"\vec{S}", r"=", r"V_{max}\angle{0^{\circ}}", r"\cdot", r"I_{max}", r"\angle{-\phi_i}"
         )
 
-        self.play(Write(euler_iden))
-        self.play(
-            AnimationGroup(
-                FadeOut(euler_iden, shift=UP),
-                FadeIn(euler_iden_rp, shift=UP),
-                lag_ratio=-0.25                      
+        with self.voiceover(
+        """I will assume the viewer already has an idea about the engineering
+        counterpart of the euler's formula."""
+        ) as tracker:
+            self.play(Write(euler_iden))
+
+        with self.voiceover(
+        """as you can see, this is a complex number with the cosine as the real part and the sine as the
+        imaginary part."""
+        ):
+            pass
+
+        with self.voiceover(
+        """Taking the real part of this complex number just leaves us with cosine."""
+        ) as tracker:
+            self.play(
+                AnimationGroup(
+                    FadeOut(euler_iden, shift=UP),
+                    FadeIn(euler_iden_rp, shift=UP),
+                    lag_ratio=-0.25                      
+                )
             )
-        )
-        self.play(TransformMatchingTex(euler_iden_rp, euler_iden_rp_t1))
-        self.play(TransformMatchingTex(euler_iden_rp_t1, euler_iden_wt1))
+
+        with self.voiceover(
+        """And if we let x be equal to omega t. We get a cosine wave that's similar to our voltage and current sinusoids."""
+        ) as tracker:
+            self.play(TransformMatchingTex(euler_iden_rp, euler_iden_rp_t1))
+            self.wait(1.0)
+            self.play(TransformMatchingTex(euler_iden_rp_t1, euler_iden_wt1))
 
         ###############################################################
-        self.play(
-            AnimationGroup(
-                euler_iden_wt1.animate.shift(UP * 0.75),
-                FadeIn(v_func_iden1, shift=UP),
-                lag_ratio=-0.25                      
+        with self.voiceover(
+        """We can then apply this identity on the voltage function.
+        """
+        ):
+            self.play(
+                AnimationGroup(
+                    euler_iden_wt1.animate.shift(UP * 0.75),
+                    FadeIn(v_func_iden1, shift=UP),
+                    lag_ratio=-0.25                      
+                )
             )
-        )
-        euler_iden_wt2.move_to(euler_iden_wt1)
-        self.play(TransformMatchingTex(v_func_iden1, v_func_iden2), TransformMatchingTex(euler_iden_wt1, euler_iden_wt2))
+            self.wait(1.5)
+            euler_iden_wt2.move_to(euler_iden_wt1)
+            self.play(TransformMatchingTex(v_func_iden1, v_func_iden2), TransformMatchingTex(euler_iden_wt1, euler_iden_wt2))
 
         self.play(
             AnimationGroup(
@@ -332,46 +398,95 @@ class PhasorAnalysisAssumptions(Scene):
 
         ###############################################################
 
-        self.play(FadeIn(i_func_iden1, shift=UP))
-        self.play(TransformMatchingTex(i_func_iden1, i_func_iden2))
-        # self.play(TransformMatchingTex(i_func_iden2, i_func_iden3))
-        self.play(i_func_iden2.animate.next_to(v_func_iden3, aligned_edge=LEFT, direction=DOWN))
+        with self.voiceover(
+        """Similarly, apply the same identity on the current function.
+        """
+        ):
+            self.play(FadeIn(i_func_iden1, shift=UP))
+
+
+        with self.voiceover(
+        """And apply the exponential rule for addition. The reason for this will be obvious in a moment.
+        """
+        ):
+            self.play(TransformMatchingTex(i_func_iden1, i_func_iden2))
+            self.wait(1.25)
+            self.play(i_func_iden2.animate.next_to(v_func_iden3, aligned_edge=LEFT, direction=DOWN))
+
         v_func_iden4.move_to(v_func_iden3, aligned_edge=LEFT)
         i_func_iden3.move_to(i_func_iden2, aligned_edge=LEFT)
 
         ###############################################################
 
-        self.play(FadeIn(p_func1, shift=UP))
-        self.play(TransformMatchingTex(p_func1, p_func2))
-        self.play(Indicate(VGroup(*p_func2[3:7]), scale_factor=1.05))
-        self.play(Indicate(VGroup(*v_func_iden3[2:]), scale_factor=1.05))
-        self.play(Indicate(VGroup(*p_func2[10:15]), scale_factor=1.05))
-        self.play(Indicate(VGroup(*i_func_iden2[2:]), scale_factor=1.05))
-        self.play(TransformMatchingTex(p_func2, p_func3))
+        with self.voiceover(
+        """Now let's bring in the power function.
+        """
+        ):
+            self.play(FadeIn(p_func1, shift=UP))
+
+        with self.voiceover(
+        """Substituting in the functions on the top left.
+        """
+        ):
+            self.play(TransformMatchingTex(p_func1, p_func2))
+            self.play(Indicate(VGroup(*p_func2[3:7]), scale_factor=1.05))
+            self.play(Indicate(VGroup(*v_func_iden3[2:]), scale_factor=1.05))
+            self.play(Indicate(VGroup(*p_func2[10:15]), scale_factor=1.05))
+            self.play(Indicate(VGroup(*i_func_iden2[2:]), scale_factor=1.05))
+
+        with self.voiceover(
+        """Notice how they have a common factor? Specifically the real part of the complex exponential e raised to j omega t? Let's factor that out.
+        """
+        ):
+            self.play(TransformMatchingTex(p_func2, p_func3))
+
         self.play(TransformMatchingTex(p_func3, p_func4))
 
-        self.play(TransformMatchingTex(v_func_iden3, v_func_iden4))
-        self.play(TransformMatchingTex(i_func_iden2, i_func_iden3))
+        with self.voiceover(
+        """Let's make the functions on the top left have a similar form as well.
+        """
+        ):
+            self.play(TransformMatchingTex(v_func_iden3, v_func_iden4))
+            self.play(TransformMatchingTex(i_func_iden2, i_func_iden3))
 
         v_phasor.move_to(v_func_iden4, aligned_edge=LEFT)
         i_phasor.move_to(i_func_iden3, aligned_edge=LEFT)
 
-        self.play(TransformMatchingTex(v_func_iden4, v_phasor), TransformMatchingTex(i_func_iden3, i_phasor))
-        self.play(
-            AnimationGroup(
-                FadeOut(p_func4, shift=UP),
-                FadeIn(s_phasor_p1, shift=UP),
-                lag_ratio=-0.25                      
+        with self.voiceover(
+        """Notice how they all have a factor of e raised to j omega t? You can interpret this as the factor that
+        makes them related to one another! Since they're all multiplied to one another, we can *temporarily forget*
+        this complex exponential just to leave out what really matters: V max, I max, and the phase shift phi i.
+        """
+        ):
+            self.play(TransformMatchingTex(v_func_iden4, v_phasor), TransformMatchingTex(i_func_iden3, i_phasor))
+            self.play(
+                AnimationGroup(
+                    FadeOut(p_func4, shift=UP),
+                    FadeIn(s_phasor_p1, shift=UP),
+                    lag_ratio=-0.25                      
+                )
             )
-        )
+
         self.play(TransformMatchingTex(s_phasor_p1, s_phasor_p2))
-        self.play(s_phasor_p2.animate.next_to(i_phasor, aligned_edge=LEFT))
+        self.play(s_phasor_p2.animate.next_to(i_phasor, aligned_edge=LEFT, direction=DOWN))
 
-        self.play(Unwrite(v_phasor, i_phasor, s_phasor_p2))
+        phasors = VGroup(v_phasor, i_phasor, s_phasor_p2)
 
-        # self.play(TransformMatchingTex(p_func4, p_func5))
-        # self.play(Indicate(VGroup(*p_func5[2:5])))
-        # self.play(Indicate(VGroup(*p_func5[6:12])))
+        with self.voiceover(
+            """These are called Phasors which are numbers in the complex plane and this makes analyzing ac circuits much easier as you'll see
+            later. """
+        ):
+            self.play(Circumscribe(phasors))
+
+        with self.voiceover(
+            """Do note that the key assumption that enabled us to represent it in this way is the fact that both the voltage and current
+            waveforms share the same frequency, you wouldn't be able to do this otherwise."""
+        ):
+            self.play(Indicate(v_phasor), Indicate(i_phasor))
+            pass
+        
+
+        self.play(Unwrite(phasors))
 
         self.wait(1.0)
         

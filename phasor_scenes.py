@@ -2,9 +2,12 @@ from manim import *
 import numpy as np
 import math
 from numpy import pi
+from manim_voiceover import VoiceoverScene
+from manim_voiceover.services.gtts import GTTSService
 
-class PhasorTime(Scene):
+class PhasorTime(VoiceoverScene):
     def construct(self):
+        self.set_speech_service(GTTSService(transcription_model=None))
         V_COL = YELLOW
         I_COL = ManimColor("#41FF17")
         P_COL = BLUE
@@ -178,29 +181,87 @@ class PhasorTime(Scene):
         phase_values = VGroup(i_phase_text, s_phase_text).arrange(DOWN, buff=0.05)
         moving_values = VGroup(max_values, phase_values).arrange(RIGHT, buff=1.0).to_edge(DOWN)
 
-        self.add(ax, plane)
-        self.add(eqns, phasor_eqns, moving_values)
-        self.add(v_phasor, i_phasor)
-        self.add(v_wave, i_wave)
-        self.add(i_phasor_angle)
-        self.play(v_max.animate.set_value(0.5), run_time=1.5)
-        self.play(v_max.animate.set_value(2.2), run_time=1.5)
-        self.play(i_max.animate.set_value(0.8), run_time=1.5)
-        self.play(i_max.animate.set_value(1.2), run_time=1.5)
-        self.play(i_phase.animate.set_value(pi / 3), run_time=3.0)
+        with self.voiceover(
+        """Now let us take a look at the phasor representation of our functions!
+        """
+        ):
+            self.play(Create(ax), Create(plane))
+            self.play(Write(eqns), Write(phasor_eqns))
+            pass
+
+        with self.voiceover(
+        """Let's put the time domain representation of the functions on the axes on the left.
+        """
+        ):
+            self.play(Circumscribe(ax))
+            self.play(Create(v_wave), Create(i_wave))
+
+        with self.voiceover(
+        """Similarly, let's also put the phasor domain representation of the functions on the
+        plane on the right.
+        """
+        ):
+            self.play(Circumscribe(plane))
+            self.play(Create(v_phasor), Create(i_phasor))
+
+        with self.voiceover(
+        """On the bottom right, i'll display and change the values that affect the power output. These
+        are V max, I max, and the phase shift of current phi i.
+        """
+        ):
+            self.play(Write(i_phasor_angle), Write(moving_values))
+
+        with self.voiceover(
+        """Watch closely how changes in the waveform map to the phasor in the plane.
+        """
+        ):
+            self.play(v_max.animate.set_value(0.5), run_time=1.5)
+            self.play(v_max.animate.set_value(2.2), run_time=1.5)
+            self.play(i_max.animate.set_value(0.8), run_time=1.5)
+            self.play(i_max.animate.set_value(1.2), run_time=1.5)
+            self.play(i_phase.animate.set_value(pi / 3), run_time=1.0)
+            self.play(i_phase.animate.set_value(-pi / 3), run_time=1.0)
+            self.play(i_phase.animate.set_value(-pi / 6), run_time=1.0)
+            self.play(i_phase.animate.set_value(pi / 4), run_time=1.0)
+
+        
         s_phasor.update()
         p_wave.update()
-        self.play(Create(p_wave))
-        self.play(s_phase_text.animate.set_opacity(1.0), Create(s_phasor), Create(s_phasor_angle))
-        self.play(FocusOn(s_phasor_angle))
-        self.play(Indicate(s_phase_text))
-        self.play(Indicate(s_phasor_angle, scale_factor=2.0))
-        self.play(Indicate(VGroup(s_phasor_eqn[3], s_phasor_eqn[7], s_phasor_eqn[8])))
+        with self.voiceover(
+        """And since the complex power S is defined as the product of these two, with one being the conjugate
+        the resulting power phasor would look like this.
+        """
+        ):
+            self.play(Create(p_wave), s_phase_text.animate.set_opacity(1.0),
+                      Create(s_phasor), Create(s_phasor_angle))
 
-        self.play(v_max.animate.set_value(0.5), run_time=1.5)
-        self.play(v_max.animate.set_value(2.2), run_time=1.5)
-        self.play(i_max.animate.set_value(0.8), run_time=1.5)
-        self.play(i_max.animate.set_value(1.2), run_time=1.5)
+        with self.voiceover(
+        """Focus closely on how this angle is just a reflection of the angle between the voltage and current phasors.
+        """
+        ):
+            self.play(FocusOn(s_phasor_angle))
+            self.play(Indicate(s_phase_text))
+            self.play(Indicate(s_phasor_angle, scale_factor=2.0))
+
+        with self.voiceover(
+        """It is inverted precisely because of the definition of the complex power phasor.
+        """
+        ):
+            self.play(Indicate(VGroup(s_phasor_eqn[3], s_phasor_eqn[7], s_phasor_eqn[8])))
+
+        with self.voiceover(
+        """Now let us try changing the constants within the voltage and current functions to see
+        how this actually affects the power phasor.
+        """
+        ):
+            self.play(v_max.animate.set_value(0.5), run_time=1.7)
+            self.play(v_max.animate.set_value(2.2), run_time=1.3)
+            self.play(i_max.animate.set_value(0.8), run_time=1.0)
+            self.play(i_max.animate.set_value(1.2), run_time=1.8)
+            self.play(i_phase.animate.set_value(pi / 3), run_time=1.2)
+            self.play(i_phase.animate.set_value(-pi / 3), run_time=1.4)
+            self.play(i_phase.animate.set_value(-pi / 6), run_time=0.8)
+            self.play(i_phase.animate.set_value(pi / 4), run_time=1.0)
 
         pass
 

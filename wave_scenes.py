@@ -9,8 +9,10 @@ from manim_voiceover.services.recorder import RecorderService
 from manim_voiceover.services.gtts import GTTSService
 from helper import play_replace_trans_full
 
-class PlottingScene(Scene):
+class PlottingScene(VoiceoverScene):
     def construct(self):
+        self.set_speech_service(GTTSService(transcription_model=None))
+
         V_MAX = 1.0
         I_MAX = 1.0
         V_COL = YELLOW
@@ -153,25 +155,69 @@ class PlottingScene(Scene):
 
         phase_angle_var = MathTex(r'\phi_i').move_to(phase_angle_circ.get_center()).shift(DOWN * 0.25).scale(0.75).shift(RIGHT * 0.125)
 
-        self.add(ax)
+        self.play(Create(ax))
 
-        self.wait(1.0)
-        self.add(v_wave)
-        self.play(v_phase.animate(rate_func=linear).set_value(50), run_time=1.0)
-        self.play(v_phase.animate(rate_func=linear).set_value(100), run_time=1.0)
-        self.play(v_phase.animate(rate_func=linear).set_value(150), run_time=1.0)
-        self.play(v_phase.animate(rate_func=smooth).set_value(0), run_time=0.25)
-        self.play(Indicate(v_wave, scale_factor=1.05, color=V_COL), Write(v_eqn))
+        with self.voiceover(
+            """So let's measure the voltage across our imaginary appliance using an imaginary oscilloscope.
+            """
+        ):
+            self.wait(1.0)
+            self.add(v_wave)
+            self.play(v_phase.animate(rate_func=linear).set_value(50), run_time=1.0)
+            self.play(v_phase.animate(rate_func=linear).set_value(100), run_time=1.0)
+            self.play(v_phase.animate(rate_func=linear).set_value(150), run_time=1.0)
 
-        self.add(i_wave)
-        self.play(Indicate(i_wave, scale_factor=1.05, color=I_COL), Write(i_eqn))
+        with self.voiceover(
+            """and for clarity, let's set the voltage's first peak as our t equals zero
+            """
+        ):
+            self.play(v_phase.animate(rate_func=smooth).set_value(0), run_time=0.25)
+            self.play(
+                LaggedStart(
+                    Indicate(v_wave, scale_factor=1.05, color=V_COL),
+                    Write(v_eqn),
+                    lag_ratio=0.75
+                )
+            )
 
-        self.play(Create(p_wave))
-        self.play(Indicate(p_wave, scale_factor=1.05), Write(p_eqn))
+        with self.voiceover(
+            """Similarly, let's measure the current through the terminals of the appliance as well.
+            """
+        ):
+            self.play(Create(i_wave))
+            self.play(
+                LaggedStart(
+                    Indicate(i_wave, scale_factor=1.05, color=I_COL),
+                    Write(i_eqn),
+                    lag_ratio=0.75
+                )
+            )
 
-        self.play(p_eqn.animate.center().to_edge(DOWN).shift(UP * 1.0))
+        with self.voiceover(
+            """and from the power law, we know that these two waveforms would multiply with each other.
+            """
+        ):
+            self.play(Write(p_eqn))
 
-        p_eqn_p1.move_to(p_eqn)
+        with self.voiceover(
+            """And as you will see, it actually is a sinusoid as well!
+            """
+        ):
+            self.play(Create(p_wave))
+            self.play(Indicate(p_wave, scale_factor=1.05))
+
+        with self.voiceover(
+            """You can actually derive this resulting sinusoid from trigonometric identities!
+            """
+        ):
+            self.play(p_eqn.animate.center().to_edge(DOWN).shift(UP * 1.0))
+            p_eqn_p1.move_to(p_eqn)
+
+        with self.voiceover(
+            """I'll play a short animation of this derivation, feel free to pause anytime!
+            """
+        ):
+            pass
 
         self.play(ReplacementTransform(p_eqn, p_eqn_p1))
         p_eqn_p2.move_to(p_eqn_p1)
@@ -185,32 +231,71 @@ class PlottingScene(Scene):
         self.play(TransformMatchingTex(p_eqn_p3, p_eqn_p4))
         self.remove(p_eqn_p3)
 
-        self.play(p_eqn_p4.animate.to_edge(DOWN))
 
-        self.play(Write(i_phase_text))
-        for tex in i_phase_vals_degr:
-            tex.next_to(i_phase_text, UP).shift(RIGHT * 0.25)
+        with self.voiceover(
+            """And here you can see that the magnitude of the wave for p actually the product
+            of the amplitudes of the voltage and current divided by 2!
+            """
+        ):
+            self.play(p_eqn_p4.animate.to_edge(DOWN))
 
-        self.play(
-            ax_x_min.animate.set_value(-pi/6 - i_phase.get_value()),
-            ax_x_max.animate.set_value(2*(2*pi) - i_phase.get_value())
-        )
+        with self.voiceover(
+            """Now i'll demonstrate what I meant earlier by *voltage being our reference thus phi v is zero*
+            and that phi i is relative to voltage.
+            """
+        ):
+            self.wait(2.0)
+            self.play(Write(i_phase_text))
+            for tex in i_phase_vals_degr:
+                tex.next_to(i_phase_text, UP).shift(RIGHT * 0.25)
+
+            self.play(
+                ax_x_min.animate.set_value(-pi/6 - i_phase.get_value()),
+                ax_x_max.animate.set_value(2*(2*pi) - i_phase.get_value())
+            )
 
         self.play(Create(i_wave_start))
         self.play(FocusOn(i_wave_start))
 
-        # 360 degrees to the left and to the right
-        self.play(
-            LaggedStart(
-                AnimationGroup(
-                    ax_x_min.animate.set_value(-pi/6 - 12*(30*DEGREES)),
-                    ax_x_max.animate.set_value(2*(2*pi) - 12*(30*DEGREES)),
-                ),
-                i_phase.animate.set_value(12 * (30 * DEGREES)), lag_ratio=0.25
-            ), run_time=3.5
-        )
-        self.play(FadeIn(i_phase_vals_degr[0], shift=UP))
-        self.play(FadeOut(i_phase_vals_degr[0], shift=UP))
+        with self.voiceover(
+            """If you imagine that green dot to be the the t equals zero of i of t. then phi i would
+            actually just be the horizontal distance of that green dot relative to the voltage's first peak!
+            """
+        ):
+            pass
+
+        with self.voiceover(
+            """Or you can also interpret it as how 'early' in time this green dot would appear relative to the
+            voltage's first peak!
+            """
+        ):
+            pass
+
+        with self.voiceover(
+            """Either way, you can use this intuition to see that, with any phase shift, there is a corresponding effect
+            on the power. You actually end up with negative power!
+            """
+        ):
+            self.wait(2.5)
+            # 360 degrees to the left and to the right
+            self.play(
+                LaggedStart(
+                    AnimationGroup(
+                        ax_x_min.animate.set_value(-pi/6 - 12*(30*DEGREES)),
+                        ax_x_max.animate.set_value(2*(2*pi) - 12*(30*DEGREES)),
+                    ),
+                    i_phase.animate.set_value(12 * (30 * DEGREES)), lag_ratio=0.25
+                ), run_time=3.5
+            )
+            self.play(FadeIn(i_phase_vals_degr[0], shift=UP))
+            self.play(FadeOut(i_phase_vals_degr[0], shift=UP))
+
+        with self.voiceover(
+            """Feel free to go back or pause to really see the effect of the phase shift on the power wave. The
+            intuition on the sign of the phase shift and its relationship with power is important.
+            """
+        ):
+            pass
         
         self.play(
             LaggedStart(
@@ -249,27 +334,58 @@ class PlottingScene(Scene):
         self.play(FadeIn(i_phase_vals_degr[3], shift=UP))
         self.play(FadeOut(i_phase_vals_degr[3], shift=UP))
 
+        with self.voiceover(
+            """Notice how positive phase shift makes our current waveform to move to the left
+            which initially causes our power waveform to become negative? Then eventually it
+            turns back to being positive? The converse is true as well!
+            """
+        ):
+            pass
+
+        self.wait(1.0)
+
+        with self.voiceover(
+            """Again, feel free to pause or go back a bit with the animations and get a feel for
+            how phi i actually affects both the current waveform and the power waveform.
+            """
+        ):
+            pass
+
+
 
         ########################################################################
         # demo the circularity of the phase shift
         
-        self.play(i_phase.animate.set_value(90 * DEGREES))
-        phase_angle_ray.update()
-        self.play(GrowFromCenter(phase_angle_circ))
-        self.play(GrowFromEdge(phase_angle_ray, LEFT), GrowFromEdge(phase_angle_ref, LEFT))
-        self.play(Create(phase_angle_angle), Create(phase_angle_var))
+        with self.voiceover(
+            """Actually, there is yet another way to visualize this. Notice that, there's actually
+            sort of a back and forth motion when you go to a phase shift value of 360 degrees. And
+            oddly that sounds a lot like motion in a circle!
+            """
+        ):
+            pass
+
+        with self.voiceover(
+            """What if we try visualizing it as a circle and see how that looks like.
+            """
+        ):
+            self.play(i_phase.animate.set_value(90 * DEGREES))
+            phase_angle_ray.update()
+            self.play(GrowFromCenter(phase_angle_circ))
+            self.play(GrowFromEdge(phase_angle_ray, LEFT), GrowFromEdge(phase_angle_ref, LEFT))
+            self.play(Create(phase_angle_angle), Create(phase_angle_var))
+
         self.play(
             LaggedStart(
                 AnimationGroup(
                     ax_x_min.animate.set_value(-pi/6 - 12*(30*DEGREES)),
                     ax_x_max.animate.set_value(2*(2*pi) - 12*(30*DEGREES)),
                 ),
-                i_phase.animate.set_value(6 * (30 * DEGREES)), lag_ratio=0.25
+                i_phase.animate.set_value(2 * (30 * DEGREES)), lag_ratio=0.25
             ), run_time=2.5
         )
         self.play(
             LaggedStart(
-                i_phase.animate.set_value(-6 * (30 * DEGREES)),
+                i_phase.animate.set_value(-2 * (30 * DEGREES)),
                 AnimationGroup(
                     ax_x_min.animate.set_value(-pi/6),
                     ax_x_max.animate.set_value(2*(2*pi)),
@@ -277,27 +393,50 @@ class PlottingScene(Scene):
             ), run_time=2.5
         )
 
-        self.play(
-            FadeOut(phase_angle_circ, shift=DOWN), FadeOut(phase_angle_ray, shift=DOWN),
-            FadeOut(phase_angle_ref, shift=DOWN), FadeOut(phase_angle_angle, shift=DOWN),
-            FadeOut(phase_angle_var, shift=DOWN)
-        )
+        with self.voiceover(
+            """Using this circle diagram kind of makes it much more clear why certain phase shifts just end up doing
+            the same thing! In particular, positive and negative 360 degrees! I mean, even positive negative 180 degrees
+            is the same as well!
+            """
+        ):
+            pass
+
+        with self.voiceover(
+            """It's amazing how much ways you can visualize this. And you might even discover more if you explore a little bit
+            more.
+            """
+        ):
+            circle_diagram = VGroup(phase_angle_circ, phase_angle_ray, phase_angle_ref, phase_angle_angle, phase_angle_var)
+
+            self.play(
+                FadeOut(circle_diagram, shift=DOWN)
+            )
+            self.remove(circle_diagram)
+            self.remove(phase_angle_circ, phase_angle_ray, phase_angle_ref, phase_angle_angle, phase_angle_var)
 
         # demo the circularity of the phase shift
         ########################################################################
 
-
-        self.play(Write(i_phase_text))
         for tex in i_phase_vals_degr:
             tex.next_to(i_phase_text, UP).shift(RIGHT * 0.25)
-
-        self.play(Create(i_wave_start))
-        self.play(FocusOn(i_wave_start))
 
         circuits = [SVGMobject('circ1.svg'), SVGMobject('circ2.svg'), SVGMobject('circ3.svg')]
         for c in circuits:
             c.set_color(WHITE)
             c.to_edge(RIGHT).shift(LEFT)
+
+        
+        with self.voiceover(
+            """Let's ground ourselves first in reality though. What exactly does phase shift actually represent?
+            """
+        ):
+            pass
+
+        with self.voiceover(
+            """Like what's the equivalent circuit you might see that's even causing this phase shift in the first place?
+            """
+        ):
+            pass
 
         # inductor negative phi, current lags voltage
         # negative phi = later in time
@@ -310,6 +449,12 @@ class PlottingScene(Scene):
         )
         self.wait(1.0)
 
+        with self.voiceover(
+            """Oh! an inductor within the circuit! What if we try removing that?
+            """
+        ):
+            pass
+
         # resistive 0 phi, current in phase voltage
         # 0 phi = same time
         self.play(
@@ -320,6 +465,14 @@ class PlottingScene(Scene):
             ), run_time=3.5
         )
         self.wait(1.0)
+
+        with self.voiceover(
+            """Ahh, so purely resistive loads don't cause any phase shift in current at all!
+            If inductors shift the waveform of the current to the left...
+            How about the waveform of the current being to the right? what's the component that causes that?
+            """
+        ):
+            pass
 
         # capacitive positive phi, current leads voltage
         # positive phi = earlier in time
@@ -332,6 +485,26 @@ class PlottingScene(Scene):
         )
         self.wait(1.0)
         self.play(FadeOut(circuits[2], shift=DOWN))
+
+        with self.voiceover(
+            """Ah, so capacitors were the ones responsible for that.
+            In other words... negative phase shift corresponds to inductive loads then,
+             positive phase shift correspond with capacitive loads.
+            and zero phase shift corresponds then to resistive loads.
+            """
+        ):
+            pass
+        with self.voiceover(
+            """But note that this convention only works if the form of the cosine in your current waveform
+             """
+        ):
+            pass
+        
+        with self.voiceover(
+            """has plus phi, not negative phi. So be careful!
+            """
+        ):
+            self.play(Indicate(i_eqn[5:]))
 
         self.play(Uncreate(i_wave_start))
         self.play(i_phase.animate.set_value(90 * DEGREES))
@@ -357,9 +530,24 @@ class PlottingScene(Scene):
             ),
         ]
 
-        i_eqn_new = MathTex(r"i_{n}(t)", r" &= I_{max}\cos(\omega t + \phi_i)", color=I_COL).move_to(i_eqn, aligned_edge=LEFT).shift(LEFT * 0.25)
-        self.play(ReplacementTransform(i_eqn, i_eqn_new))
-        self.play(ReplacementTransform(p_eqn_p4, p_eqn_p5))
+        with self.voiceover(
+            """Now in a typical household, you don't just have one appliance but multiple appliances connected to your home outlets. These
+            appliances are all connected so by KCL their currents add"""
+        ):
+            pass
+
+        with self.voiceover(
+            """And thus your power equation would have the following form, where n is your enth appliance."""
+        ):
+            i_eqn_new = MathTex(r"i_{n}(t)", r" &= I_{max}\cos(\omega t + \phi_i)", color=I_COL).move_to(i_eqn, aligned_edge=LEFT).shift(LEFT * 0.25)
+            self.play(ReplacementTransform(i_eqn, i_eqn_new))
+            self.play(ReplacementTransform(p_eqn_p4, p_eqn_p5))
+            self.play(Uncreate(p_wave))
+
+        with self.voiceover(
+            """Let's see what this does to the power wave"""
+        ):
+            pass
 
         for i, wave in enumerate(i_waves_more):
             self.play(Create(wave))
@@ -367,12 +555,50 @@ class PlottingScene(Scene):
             self.play(ReplacementTransform(p_waves_more[i], p_waves_more[i + 1]))
             self.wait(1.0)
 
-        vt_distr = p_eqn_p5.get_part_by_tex(r'v(t)').copy()
-        vt_distr_rot_pt = p_eqn_p5.get_part_by_tex(r"\sum_{i=1}^{n}").get_center()
-        vt_distr.generate_target()
-        vt_distr.target.move_to(p_eqn_p5.get_part_by_tex(r"i_{n}(t)").get_center()).scale(0.0)
-        self.play(Rotate(vt_distr, angle=-120 * DEGREES, about_point=vt_distr_rot_pt))
-        self.play(MoveToTarget(vt_distr))
+        with self.voiceover(
+            """This actually makes sense as you can think of the voltage function as a factor in all of the
+            terms inside this summation."""
+        ):
+            vt_distr = p_eqn_p5.get_part_by_tex(r'v(t)').copy()
+            vt_distr_rot_pt = p_eqn_p5.get_part_by_tex(r"\sum_{i=1}^{n}").get_center()
+            vt_distr.generate_target()
+            vt_distr.target.move_to(p_eqn_p5.get_part_by_tex(r"i_{n}(t)").get_center()).scale(0.0)
+            self.play(Rotate(vt_distr, angle=-120 * DEGREES, about_point=vt_distr_rot_pt))
+            self.play(MoveToTarget(vt_distr))
+
+        self.wait(1.0)
+
+        with self.voiceover(
+            """The resulting power wave should actually make sense as this wave is the sum of the power sinusoids
+            of each appliance.
+            """
+        ):
+            pass
+
+        with self.voiceover(
+            """But analysing power consumption in this way is very impractical. In a sense that, we have to deal with
+            multiplying trigonometric functions with one another, then we also have to analyze the waveform of the power
+            function.
+            """
+        ):
+            pass
+
+        with self.voiceover(
+            """As we have previously observed, only the constants V max I max and phi i are the ones that actually really matter.
+            What if there was a way for us to just ignore the parts of the function that depend on t? In other words, how do we
+            look at our ac circuit as a time invariant system?
+            """
+            
+        ):
+            pass
+
+        with self.voiceover(
+            """This is where the power of complex numbers come in. Representing these functions v of t, i of t, and p of t.
+            as complex exponentials let us, quite literally, factor out t out of the equations so that what's only left is
+            the magnitude of power. But its a bit more nuanced than that which we will show in the following slides.
+            """
+        ):
+            pass
 
         self.wait(5.0)
 
